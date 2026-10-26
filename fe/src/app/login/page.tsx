@@ -44,18 +44,13 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-100 p-4">
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="w-full max-w-sm space-y-4 rounded-xl bg-white p-6 shadow"
-      >
+      <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-sm space-y-4 rounded-xl bg-white p-6 shadow">
         <div>
           <h1 className="text-xl font-semibold text-slate-900">Masuk</h1>
           <p className="text-sm text-slate-500">Sistem manajemen rental kendaraan</p>
         </div>
 
-        {error && (
-          <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>
-        )}
+        {error && <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
 
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700">Email</label>
@@ -65,31 +60,24 @@ export default function LoginPage() {
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-slate-900"
             {...register("email")}
           />
-          {errors.email && (
-            <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>
-          )}
+          {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            Kata sandi
-          </label>
+          <label className="mb-1 block text-sm font-medium text-slate-700">Kata sandi</label>
           <input
             type="password"
             autoComplete="current-password"
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-slate-900"
             {...register("password")}
           />
-          {errors.password && (
-            <p className="mt-1 text-xs text-red-600">{errors.password.message}</p>
-          )}
+          {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password.message}</p>}
         </div>
 
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full rounded-md bg-blue-700 py-2.5 font-medium text-white disabled:opacity-60"
-        >
+          className="w-full rounded-md bg-blue-700 py-2.5 font-medium text-white disabled:opacity-60">
           {isSubmitting ? "Memproses..." : "Masuk"}
         </button>
       </form>

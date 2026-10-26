@@ -56,19 +56,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const nav = (
     <nav className="flex-1 space-y-1 overflow-y-auto p-3">
       {items.map((m) => {
-        const active =
-          m.href === "/admin" ? pathname === "/admin" : pathname.startsWith(m.href);
+        const active = m.href === "/admin" ? pathname === "/admin" : pathname.startsWith(m.href);
         return (
           <Link
             key={m.href}
             href={m.href}
             onClick={() => setOpen(false)}
             className={`block rounded-md px-3 py-2 text-sm ${
-              active
-                ? "bg-blue-600 text-white"
-                : "text-slate-300 hover:bg-slate-800"
-            }`}
-          >
+              active ? "bg-blue-600 text-white" : "text-slate-300 hover:bg-slate-800"
+            }`}>
             {m.label}
           </Link>
         );
@@ -80,10 +76,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="border-t border-slate-800 p-3 text-sm">
       <p className="font-medium text-white">{me.name}</p>
       <p className="text-slate-400">{roleLabel[me.role]}</p>
-      <button
-        onClick={logout}
-        className="mt-2 w-full rounded-md bg-slate-800 py-2 text-slate-200 hover:bg-slate-700"
-      >
+      <button onClick={logout} className="mt-2 w-full rounded-md bg-slate-800 py-2 text-slate-200 hover:bg-slate-700">
         Keluar
       </button>
     </div>
@@ -101,10 +94,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Bar atas HP */}
       <header className="flex items-center justify-between bg-slate-900 p-3 text-white md:hidden">
         <span className="font-semibold">Rental</span>
-        <button
-          onClick={() => setOpen((v) => !v)}
-          className="rounded-md bg-slate-800 px-3 py-1.5 text-sm"
-        >
+        <button onClick={() => setOpen((v) => !v)} className="rounded-md bg-slate-800 px-3 py-1.5 text-sm">
           {open ? "Tutup" : "Menu"}
         </button>
       </header>
