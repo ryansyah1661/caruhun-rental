@@ -1,5 +1,7 @@
 "use client";
 
+export const instant = false;
+
 import React, { useState, useMemo } from "react";
 
 // Types untuk data armada
