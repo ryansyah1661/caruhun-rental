@@ -17,14 +17,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, [isLoading, me, router]);
 
-  if (isLoading || !me) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-surface text-stone-500 font-body-md">
-        Memuat data...
-      </div>
-    );
-  }
-
   return (
     <div className="relative min-h-screen w-full bg-surface-container-lowest font-body-md text-body-md text-on-surface antialiased">
       {/* Sidebar Navigasi Admin */}

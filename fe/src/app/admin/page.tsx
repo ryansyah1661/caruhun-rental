@@ -1,7 +1,5 @@
 "use client";
 
-export const instant = false;
-
 import React, { useState, useMemo } from "react";
 
 // Types untuk data armada
@@ -110,6 +108,7 @@ const INITIAL_FLEET: FleetItem[] = [
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
+
   // Filter logika tabel
   const filteredFleet = useMemo(() => {
     return INITIAL_FLEET.filter((item) => {
@@ -187,6 +186,34 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* ================= PEMBERITAHUAN KONDISI KENDARAAN (FULL WIDTH) ================= */}
+        <div className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col space-y-space-md">
+          <div className="flex items-center justify-between border-b border-surface-container pb-space-xs">
+            <div>
+              <h2 className="font-title-md text-title-md font-bold text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-amber-600 text-[20px]">warning</span>
+                Pemberitahuan Kondisi Kendaraan
+              </h2>
+              <p className="font-body-sm text-xs text-secondary mt-0.5">
+                Masalah teknis & status urgensi armada yang dilaporkan
+              </p>
+            </div>
+            <span className="px-3 py-1 rounded-full bg-error/10 text-error font-label-sm text-xs font-bold shrink-0">
+              1 Peringatan
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <VehicleConditionAlert
+              unitName="Mitsubishi Pajero"
+              nopol="E 5555 LJ"
+              issue="AC MATI IDUP"
+              time="12 Okt, 10:04"
+              badgeText="Penting"
+            />
+          </div>
+        </div>
+
         {/* KPI Metrics Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-md">
           <KPICard
@@ -226,6 +253,80 @@ export default function Dashboard() {
             description="2 perawatan rutin berkala, 2 perbaikan fisik"
             isError
           />
+        </div>
+
+        {/* ================= RENTAL SEDANG BERJALAN (FULL WIDTH) ================= */}
+        <div className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col space-y-space-md">
+          <div className="flex items-center justify-between border-b border-surface-container pb-space-xs">
+            <div>
+              <h2 className="font-title-md text-title-md font-bold text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-[20px]">key</span>
+                Rental Sedang Berjalan
+              </h2>
+              <p className="font-body-sm text-xs text-secondary mt-0.5">Armada aktif disewa pelanggan saat ini</p>
+            </div>
+            <button
+              type="button"
+              className="px-3 py-1.5 rounded-lg bg-primary-container text-on-primary font-label-md text-xs hover:bg-primary transition-colors shrink-0">
+              Lihat Semua Rental
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+            <ActiveRentalCard
+              unitName="Toyota Fortuner"
+              nopol="B 1966 SBB"
+              renterName="Deni"
+              renterPhone="085141610411"
+              departureTime="12 Okt, 12:00"
+              returnTime="13 Okt, 12:05"
+              totalFee="Rp750.000"
+              paymentStatus="Sewa Lunas"
+              remainingFee="Rp0"
+              adminName="Naila"
+              isOverdue={true}
+            />
+            <ActiveRentalCard
+              unitName="Toyota Calya"
+              nopol="D 3333 YR"
+              renterName="Rini Azlia"
+              renterPhone="0817854"
+              departureTime="12 Okt, 12:07"
+              returnTime="13 Okt, 12:10"
+              totalFee="Rp450.000"
+              paymentStatus="Sewa Belum Bayar"
+              remainingFee="Rp450.000"
+              extraNote="Sisa Sewa: Rp450.000"
+              adminName="Naila"
+              isOverdue={true}
+            />
+            <ActiveRentalCard
+              unitName="Honda Brio"
+              nopol="B 1234 BKC"
+              renterName="Rizki Ramdhani"
+              renterPhone="081244321000"
+              departureTime="12 Okt, 20:00"
+              returnTime="13 Okt, 20:00"
+              totalFee="Rp450.000"
+              paymentStatus="Sewa Lunas"
+              remainingFee="Rp0"
+              adminName="Naila"
+              isOverdue={true}
+            />
+            <ActiveRentalCard
+              unitName="Mitsubishi Pajero"
+              nopol="E 5555 LJ"
+              renterName="Asha"
+              renterPhone="08123456789"
+              departureTime="12 Okt, 21:00"
+              returnTime="13 Okt, 21:00"
+              totalFee="Rp750.000"
+              paymentStatus="Sewa Lunas"
+              remainingFee="Rp0"
+              adminName="Naila"
+              isOverdue={true}
+            />
+          </div>
         </div>
 
         {/* Operational Flow: Split Daily Schedules */}
@@ -783,5 +884,145 @@ function StatusBadge({ status }: StatusBadgeProps) {
       <span className={`w-2 h-2 rounded-full ${dotColor}`}></span>
       {status}
     </span>
+  );
+}
+
+interface VehicleConditionAlertProps {
+  unitName: string;
+  nopol: string;
+  issue: string;
+  time: string;
+  badgeText?: string;
+}
+
+function VehicleConditionAlert({ unitName, nopol, issue, time, badgeText = "Penting" }: VehicleConditionAlertProps) {
+  return (
+    <div className="bg-surface-container-lowest rounded-xl p-space-md shadow-sm border border-outline-variant/30">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+          <span className="font-title-md text-title-md font-semibold text-on-surface">
+            {unitName} • <span className="font-mono text-secondary">{nopol}</span>
+          </span>
+        </div>
+        <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-700 font-label-sm text-label-sm font-medium">
+          {badgeText}
+        </span>
+      </div>
+      <div className="bg-surface-container-low p-3 rounded-lg border-l-4 border-amber-500 flex justify-between items-center">
+        <div>
+          <p className="font-title-md text-sm text-on-surface font-semibold uppercase tracking-wide">{issue}</p>
+          <span className="font-body-sm text-xs text-secondary mt-0.5 block">{time}</span>
+        </div>
+        <button className="px-3 py-1.5 rounded-md bg-surface-container hover:bg-surface-dim text-on-surface font-label-sm text-xs transition-colors">
+          Tindak Lanjuti
+        </button>
+      </div>
+    </div>
+  );
+}
+
+interface ActiveRentalCardProps {
+  unitName: string;
+  nopol: string;
+  renterName: string;
+  renterPhone: string;
+  departureTime: string;
+  returnTime: string;
+  totalFee: string;
+  paymentStatus: "Sewa Lunas" | "Sewa Belum Bayar";
+  remainingFee: string;
+  extraNote?: string;
+  adminName: string;
+  isOverdue?: boolean;
+}
+
+function ActiveRentalCard({
+  unitName,
+  nopol,
+  renterName,
+  renterPhone,
+  departureTime,
+  returnTime,
+  totalFee,
+  paymentStatus,
+  remainingFee,
+  extraNote,
+  adminName,
+  isOverdue = false,
+}: ActiveRentalCardProps) {
+  const isPaid = paymentStatus === "Sewa Lunas";
+
+  return (
+    <div className="bg-surface-container-lowest rounded-xl p-space-md shadow-sm border border-surface-container hover:shadow-md transition-shadow">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-surface-container pb-3 mb-3">
+        <div className="flex items-center gap-2">
+          <span className="material-symbols-outlined text-primary text-[20px]">directions_car</span>
+          <h3 className="font-title-md text-title-md font-bold text-on-surface">
+            {unitName} <span className="font-mono text-secondary font-normal">• {nopol}</span>
+          </h3>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="px-2.5 py-0.5 rounded-full bg-tertiary-container/15 text-tertiary-container font-label-sm text-xs font-semibold">
+            Disewa
+          </span>
+          {isOverdue && (
+            <span className="px-2.5 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-xs font-bold flex items-center gap-1">
+              <span className="material-symbols-outlined text-[14px]">warning</span>
+              TERLAMBAT KEMBALI
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className="mb-2">
+        <span className="font-title-md text-sm font-semibold text-on-surface">{renterName}</span>
+        <span className="font-body-sm text-xs text-secondary ml-2 font-mono">({renterPhone})</span>
+      </div>
+
+      <div className="flex items-center gap-2 font-body-sm text-xs text-secondary mb-3">
+        <span>
+          Berangkat: <strong className="text-on-surface font-medium">{departureTime}</strong>
+        </span>
+        <span>➔</span>
+        <span>
+          Kembali: <strong className="text-on-surface font-medium">{returnTime}</strong>
+        </span>
+      </div>
+
+      <div className="bg-surface-container-low p-2.5 rounded-lg mb-3 font-label-md text-xs space-y-1">
+        <div className="flex items-center gap-3">
+          <span className="font-bold text-on-surface">{totalFee}</span>
+          <span
+            className={`px-2 py-0.5 rounded text-[11px] font-semibold ${isPaid ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"}`}>
+            {paymentStatus}
+          </span>
+          <span className="text-secondary">
+            Sisa Sewa:{" "}
+            <strong className={remainingFee === "Rp0" ? "text-emerald-700" : "text-error font-bold"}>
+              {remainingFee}
+            </strong>
+          </span>
+        </div>
+        {extraNote && <div className="text-amber-700 font-semibold text-[11px] pt-0.5">{extraNote}</div>}
+        <div className="text-secondary text-[11px] pt-0.5">
+          Admin bertugas: <span className="text-on-surface font-medium">{adminName}</span>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between gap-2 pt-1">
+        <button
+          type="button"
+          className="px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-dim text-on-surface font-label-md text-xs transition-colors">
+          Detail
+        </button>
+        <button
+          type="button"
+          className="px-3.5 py-1.5 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-label-md text-xs font-medium flex items-center gap-1.5 shadow-sm transition-all active:scale-95">
+          <span className="material-symbols-outlined text-[15px]">send</span>
+          <span>Kirim Pengingat Kedatangan</span>
+        </button>
+      </div>
+    </div>
   );
 }
