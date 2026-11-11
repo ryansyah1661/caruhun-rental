@@ -122,14 +122,15 @@ export default function Navbar() {
 
   return (
     <header className="fixed top-0 left-0 w-full z-50 flex flex-col items-center pointer-events-none">
-      <nav className="w-full flex justify-center z-50 pt-4 px-4">
+      <nav className="w-full flex justify-center z-50 pt-3 sm:pt-4 px-4">
         <div
-          className={`pointer-events-auto flex items-center justify-between transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] overflow-visible
-            bg-white/95 backdrop-blur-xl border border-slate-200/90 rounded-full shadow-sm
+          className={`pointer-events-auto flex items-center justify-between transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-visible
+            bg-white/95 backdrop-blur-xl border border-slate-200/90 rounded-full
+            w-[95%] h-16 sm:h-20 px-6 sm:px-8
             ${
               scrolled
-                ? "w-[90%] max-w-4xl h-14 px-5 shadow-md border-slate-300 scale-[0.98] -translate-y-1"
-                : "w-[95%] max-w-6xl h-16 sm:h-20 px-8 shadow-sm scale-100 translate-y-0"
+                ? "max-w-4xl shadow-md border-slate-300"
+                : "max-w-6xl shadow-sm"
             }`}>
           {/* Group Kiri (Logo + Navigasi) */}
           <div className="flex items-center gap-4 xl:gap-6 shrink-0">
@@ -252,21 +253,10 @@ export default function Navbar() {
             <button
               type="button"
               onClick={handleContactWhatsApp}
-              className={`rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs flex items-center gap-1 shadow-sm transition-all active:scale-95 whitespace-nowrap ${
-                scrolled ? "px-3 py-1.5 text-[11px]" : "px-3.5 py-2 text-xs"
-              }`}>
+              className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-3.5 py-2 flex items-center gap-1 shadow-sm transition-all active:scale-95 whitespace-nowrap">
               <span className="material-symbols-outlined text-[15px] shrink-0">chat</span>
               <span className="hidden sm:inline whitespace-nowrap">Hubungi WA</span>
             </button>
-
-            {/* Admin Login Link */}
-            <Link
-              href="/login"
-              className={`rounded-full bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs shadow-sm transition-all active:scale-95 whitespace-nowrap ${
-                scrolled ? "px-3 py-1.5 text-[11px]" : "px-3.5 py-2 text-xs"
-              }`}>
-              Masuk Admin
-            </Link>
           </div>
         </div>
       </nav>

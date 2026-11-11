@@ -145,13 +145,8 @@ export default function Home() {
       <Navbar />
 
       {/* ================= HERO SECTION ================= */}
-      <section id="hero" className="bg-white py-16 lg:py-20 border-b border-slate-200 relative overflow-hidden">
+      <section id="hero" className="bg-white pt-28 sm:pt-36 lg:pt-40 pb-16 lg:pb-20 border-b border-slate-200 relative overflow-hidden">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold">
-            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-            Layanan Rental Kendaraan Resmi & Terpercaya
-          </span>
-
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-tight">
             Solusi Armada Berkualitas <br />
             <span className="text-amber-600">Untuk Perjalanan Tanpa Kendala</span>
