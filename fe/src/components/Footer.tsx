@@ -11,12 +11,6 @@ export default function Footer() {
     return null;
   }
 
-  const handleContactWhatsApp = () => {
-    const adminPhoneNumber = "6281234567890";
-    const msg = "Halo Admin Caruhun Rental, saya ingin berkonsultasi mengenai penyewaan armada.";
-    window.open(`https://wa.me/${adminPhoneNumber}?text=${encodeURIComponent(msg)}`, "_blank");
-  };
-
   return (
     <footer className="bg-stone-900 text-stone-300 border-t border-stone-800 font-body-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-10">
@@ -112,7 +106,7 @@ export default function Footer() {
           {/* Kolom 4: Kontak & Operasional (3 cols) */}
           <div className="lg:col-span-3 space-y-3.5">
             <h3 className="text-xs font-extrabold uppercase tracking-wider text-white">Pool & Kontak</h3>
-            <ul className="space-y-2.5 text-xs text-stone-400">
+            <ul className="space-y-3 text-xs text-stone-400">
               <li className="flex items-start gap-2">
                 <span className="material-symbols-outlined text-[16px] text-amber-500 shrink-0 mt-0.5">
                   location_on
@@ -125,19 +119,19 @@ export default function Footer() {
               </li>
               <li className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-[16px] text-amber-500 shrink-0">call</span>
-                <span>+62 812-3456-7890</span>
+                <a
+                  href="tel:+6281234567890"
+                  className="hover:text-amber-400 transition-colors font-medium text-stone-300">
+                  +62 812-3456-7890
+                </a>
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-[16px] text-amber-500 shrink-0">mail</span>
+                <a href="mailto:admin@caruhunrental.id" className="hover:text-amber-400 transition-colors">
+                  admin@caruhunrental.id
+                </a>
               </li>
             </ul>
-
-            <div className="pt-1">
-              <button
-                type="button"
-                onClick={handleContactWhatsApp}
-                className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs inline-flex items-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer">
-                <span className="material-symbols-outlined text-[16px]">chat</span>
-                <span>Chat WhatsApp Admin</span>
-              </button>
-            </div>
           </div>
         </div>
 

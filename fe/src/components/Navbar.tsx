@@ -35,7 +35,7 @@ const UKFlag = ({ className = "w-4 h-3" }: { className?: string }) => (
   </svg>
 );
 
-/* ---------- Config Navigasi Tanpa Dropdown ---------- */
+/* ---------- Config Navigasi ---------- */
 
 const navLinks: NavLink[] = [
   { label: "Beranda", href: "/" },
@@ -58,7 +58,7 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  if (pathname.startsWith("/admin") || pathname.startsWith("/login")) {
+  if (pathname?.startsWith("/admin") || pathname?.startsWith("/login")) {
     return null;
   }
 
@@ -67,13 +67,13 @@ export default function Navbar() {
     if (href === "/#katalog") {
       return (
         pathname === "/katalog" ||
-        pathname.startsWith("/katalog/") ||
+        pathname?.startsWith("/katalog/") ||
         pathname === "/cari" ||
-        pathname.startsWith("/cari/")
+        pathname?.startsWith("/cari/")
       );
     }
     if (href.startsWith("/#") || href.startsWith("#")) return false;
-    return pathname === href || pathname.startsWith(href + "/");
+    return pathname === href || pathname?.startsWith(href + "/");
   };
 
   const handleContactWhatsApp = () => {
@@ -83,102 +83,106 @@ export default function Navbar() {
   };
 
   return (
-    <header className="fixed top-0 left-0 w-full z-50 flex flex-col items-center pointer-events-none">
-      <nav className="w-full flex justify-center z-50 pt-3 sm:pt-4 px-4">
-        <div
-          className={`pointer-events-auto flex items-center justify-between transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-visible
-            bg-white/95 backdrop-blur-xl border border-slate-200/90 rounded-full
-            w-[95%] h-16 sm:h-20 px-6 sm:px-8
-            ${scrolled ? "max-w-4xl shadow-md border-slate-300" : "max-w-6xl shadow-sm"}`}>
-          {/* Group Kiri (Logo + Navigasi) */}
-          <div className="flex items-center gap-4 xl:gap-6 shrink-0">
-            {/* Logo Brand */}
-            <Link href="/" className="flex items-center gap-2.5 shrink-0 group whitespace-nowrap">
-              <img
-                src="/images/logo.png"
-                alt="Logo Caruhun"
-                className="h-9 w-auto object-contain shrink-0 transition-transform duration-300 group-hover:scale-105"
-              />
-              <div className="flex flex-col leading-none">
-                <span className="font-bold text-sm sm:text-base text-slate-900 tracking-tight">Caruhun</span>
-                <span className="text-[8px] font-semibold text-amber-600 uppercase tracking-widest mt-0.5">
-                  Rental Armada
-                </span>
+    <>
+      {/* ================= FLOATING NAVBAR ================= */}
+      <header className="fixed top-0 left-0 w-full z-50 flex flex-col items-center pointer-events-none">
+        <nav className="w-full flex justify-center z-50 pt-3 sm:pt-4 px-4">
+          <div
+            className={`pointer-events-auto flex items-center justify-between transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-visible
+              bg-white/95 backdrop-blur-xl border border-slate-200/90 rounded-full
+              w-[95%] h-16 sm:h-20 px-6 sm:px-8
+              ${scrolled ? "max-w-4xl shadow-md border-slate-300" : "max-w-6xl shadow-sm"}`}>
+            {/* Group Kiri (Logo + Navigasi) */}
+            <div className="flex items-center gap-4 xl:gap-6 shrink-0">
+              {/* Logo Brand */}
+              <Link href="/" className="flex items-center gap-2.5 shrink-0 group whitespace-nowrap">
+                <img
+                  src="/images/logo.png"
+                  alt="Logo Caruhun"
+                  className="h-9 w-auto object-contain shrink-0 transition-transform duration-300 group-hover:scale-105"
+                />
+                <div className="flex flex-col leading-none">
+                  <span className="font-bold text-sm sm:text-base text-slate-900 tracking-tight">Caruhun</span>
+                  <span className="text-[8px] font-semibold text-amber-600 uppercase tracking-widest mt-0.5">
+                    Rental Armada
+                  </span>
+                </div>
+              </Link>
+
+              {/* Menu Navigasi Links */}
+              <div className="hidden lg:flex items-center gap-1 font-body-sm text-xs sm:text-sm font-extrabold whitespace-nowrap">
+                {navLinks.map((link) => {
+                  const isActive = isLinkActive(link.href);
+
+                  return (
+                    <Link
+                      key={link.label}
+                      href={link.href}
+                      aria-current={isActive ? "page" : undefined}
+                      className={`px-3 py-1.5 rounded-lg transition-colors flex items-center whitespace-nowrap hover:text-amber-600 ${
+                        isActive ? "text-amber-600" : "text-slate-800"
+                      }`}>
+                      <span>{link.label}</span>
+                    </Link>
+                  );
+                })}
               </div>
-            </Link>
-
-            {/* Menu Navigasi Links (Bersih Tanpa Dropdown) */}
-            <div className="hidden lg:flex items-center gap-1 font-body-sm text-xs sm:text-sm font-extrabold whitespace-nowrap">
-              {navLinks.map((link) => {
-                const isActive = isLinkActive(link.href);
-
-                return (
-                  <Link
-                    key={link.label}
-                    href={link.href}
-                    aria-current={isActive ? "page" : undefined}
-                    className={`px-3 py-1.5 rounded-lg transition-colors flex items-center whitespace-nowrap hover:text-amber-600 ${
-                      isActive ? "text-amber-600" : "text-slate-800"
-                    }`}>
-                    <span>{link.label}</span>
-                  </Link>
-                );
-              })}
             </div>
-          </div>
 
-          {/* Group Kanan (CTA Actions & Language) */}
-          <div className="flex items-center gap-2 shrink-0 whitespace-nowrap">
-            {/* Pemilih Bahasa */}
-            <div className="relative group whitespace-nowrap">
-              <button
-                type="button"
-                className="flex items-center gap-1 font-body-sm text-xs font-extrabold text-slate-700 hover:text-amber-600 transition-colors cursor-pointer py-1 px-1 rounded-lg">
-                {currentLang === "ID" ? <IndonesiaFlag /> : <UKFlag />}
-                <span className="material-symbols-outlined text-[15px] transition-transform duration-300 group-hover:rotate-180 shrink-0">
-                  expand_more
-                </span>
-              </button>
+            {/* Group Kanan (Pemilih Bahasa) */}
+            <div className="flex items-center gap-2 shrink-0 whitespace-nowrap">
+              <div className="relative group whitespace-nowrap">
+                <button
+                  type="button"
+                  className="flex items-center gap-1.5 font-body-sm text-xs font-extrabold text-slate-700 hover:text-amber-600 transition-colors cursor-pointer py-1.5 px-2.5 rounded-full hover:bg-slate-100/80">
+                  {currentLang === "ID" ? <IndonesiaFlag /> : <UKFlag />}
+                  <span className="hidden sm:inline text-slate-700">{currentLang}</span>
+                  <span className="material-symbols-outlined text-[15px] transition-transform duration-300 group-hover:rotate-180 shrink-0">
+                    expand_more
+                  </span>
+                </button>
 
-              <div className="absolute right-0 top-full pt-2 w-32 z-50 opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 ease-out">
-                <div className="flex flex-col p-1.5 bg-white border border-slate-200 rounded-2xl shadow-md gap-1">
-                  <button
-                    type="button"
-                    onClick={() => setCurrentLang("ID")}
-                    className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
-                      currentLang === "ID"
-                        ? "bg-amber-50 text-amber-700"
-                        : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
-                    }`}>
-                    <IndonesiaFlag />
-                    <span>Indonesia</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCurrentLang("EN")}
-                    className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
-                      currentLang === "EN"
-                        ? "bg-amber-50 text-amber-700"
-                        : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
-                    }`}>
-                    <UKFlag />
-                    <span>English</span>
-                  </button>
+                <div className="absolute right-0 top-full pt-2 w-32 z-50 opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 ease-out">
+                  <div className="flex flex-col p-1.5 bg-white border border-slate-200 rounded-2xl shadow-md gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setCurrentLang("ID")}
+                      className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
+                        currentLang === "ID"
+                          ? "bg-amber-50 text-amber-700"
+                          : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+                      }`}>
+                      <IndonesiaFlag />
+                      <span>Indonesia</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentLang("EN")}
+                      className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
+                        currentLang === "EN"
+                          ? "bg-amber-50 text-amber-700"
+                          : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+                      }`}>
+                      <UKFlag />
+                      <span>English</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-
-            {/* WhatsApp CTA */}
-            <button
-              type="button"
-              onClick={handleContactWhatsApp}
-              className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-3.5 py-2 flex items-center gap-1 shadow-sm transition-all active:scale-95 whitespace-nowrap cursor-pointer">
-              <span className="material-symbols-outlined text-[15px] shrink-0">chat</span>
-              <span className="hidden sm:inline whitespace-nowrap">Hubungi WA</span>
-            </button>
           </div>
-        </div>
-      </nav>
-    </header>
+        </nav>
+      </header>
+
+      {/* ================= FLOATING WHATSAPP BUTTON (POJOK KANAN BAWAH) ================= */}
+      <button
+        type="button"
+        onClick={handleContactWhatsApp}
+        aria-label="Kontak WhatsApp Admin"
+        className="fixed bottom-5 right-5 z-40 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm px-4 sm:px-5 py-3 sm:py-3.5 flex items-center gap-2 shadow-[0_10px_25px_rgba(5,150,105,0.35)] hover:shadow-[0_14px_30px_rgba(5,150,105,0.45)] transition-all duration-200 hover:-translate-y-0.5 active:scale-95 cursor-pointer">
+        <span className="material-symbols-outlined text-[18px] sm:text-[20px] shrink-0">chat</span>
+        <span>Kontak WhatsApp</span>
+      </button>
+    </>
   );
 }
