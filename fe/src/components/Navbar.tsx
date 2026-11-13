@@ -6,20 +6,9 @@ import { usePathname } from "next/navigation";
 
 /* ---------- Types ---------- */
 
-type SubItem = {
-  label: string;
-  href: string;
-  dataPath: string;
-  icon: string;
-  description?: string;
-};
-
 type NavLink = {
   label: string;
   href: string;
-  dataPath: string;
-  hasDropdown?: boolean;
-  subItems?: SubItem[];
 };
 
 /* ---------- Flag SVG Components ---------- */
@@ -46,49 +35,14 @@ const UKFlag = ({ className = "w-4 h-3" }: { className?: string }) => (
   </svg>
 );
 
-/* ---------- Config Navigasi Caruhun ---------- */
+/* ---------- Config Navigasi Tanpa Dropdown ---------- */
 
 const navLinks: NavLink[] = [
-  { label: "Beranda", href: "/", dataPath: "beranda" },
-  {
-    label: "Katalog",
-    href: "#katalog",
-    dataPath: "katalog-armada",
-    hasDropdown: true,
-    subItems: [
-      {
-        label: "MPV Keluarga",
-        href: "/#katalog",
-        dataPath: "mpv-keluarga",
-        icon: "directions_car",
-        description: "Avanza, Innova Zenix & sejenisnya",
-      },
-      {
-        label: "City Car",
-        href: "/#katalog",
-        dataPath: "city-car",
-        icon: "directions_car",
-        description: "Brio RS & tipe lincah perkotaan",
-      },
-      {
-        label: "SUV Tough",
-        href: "/#katalog",
-        dataPath: "suv-tough",
-        icon: "time_to_leave",
-        description: "Pajero Sport & rute medan berat",
-      },
-      {
-        label: "Minibus",
-        href: "/#katalog",
-        dataPath: "minibus",
-        icon: "airport_shuttle",
-        description: "HiAce Commuter 16-Seat & microbus",
-      },
-    ],
-  },
-  { label: "Tentang", href: "#tentang", dataPath: "tentang-kami" },
-  { label: "Keunggulan", href: "#keunggulan", dataPath: "keunggulan" },
-  { label: "Partner", href: "#partner", dataPath: "partner" },
+  { label: "Beranda", href: "/" },
+  { label: "Katalog", href: "/katalog" },
+  { label: "Tentang", href: "/tentang" },
+  { label: "Keunggulan", href: "/keunggulan" },
+  { label: "Partner", href: "/partner" },
 ];
 
 /* ---------- Navbar Component ---------- */
@@ -109,8 +63,16 @@ export default function Navbar() {
   }
 
   const isLinkActive = (href: string) => {
-    if (href.startsWith("#")) return false;
     if (href === "/") return pathname === "/";
+    if (href === "/#katalog") {
+      return (
+        pathname === "/katalog" ||
+        pathname.startsWith("/katalog/") ||
+        pathname === "/cari" ||
+        pathname.startsWith("/cari/")
+      );
+    }
+    if (href.startsWith("/#") || href.startsWith("#")) return false;
     return pathname === href || pathname.startsWith(href + "/");
   };
 
@@ -127,18 +89,16 @@ export default function Navbar() {
           className={`pointer-events-auto flex items-center justify-between transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-visible
             bg-white/95 backdrop-blur-xl border border-slate-200/90 rounded-full
             w-[95%] h-16 sm:h-20 px-6 sm:px-8
-            ${
-              scrolled
-                ? "max-w-4xl shadow-md border-slate-300"
-                : "max-w-6xl shadow-sm"
-            }`}>
+            ${scrolled ? "max-w-4xl shadow-md border-slate-300" : "max-w-6xl shadow-sm"}`}>
           {/* Group Kiri (Logo + Navigasi) */}
           <div className="flex items-center gap-4 xl:gap-6 shrink-0">
             {/* Logo Brand */}
-            <Link href="/" className="flex items-center gap-2 shrink-0 group whitespace-nowrap">
-              <div className="w-8 h-8 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-amber-600 text-[18px]">directions_car</span>
-              </div>
+            <Link href="/" className="flex items-center gap-2.5 shrink-0 group whitespace-nowrap">
+              <img
+                src="/images/logo.png"
+                alt="Logo Caruhun"
+                className="h-9 w-auto object-contain shrink-0 transition-transform duration-300 group-hover:scale-105"
+              />
               <div className="flex flex-col leading-none">
                 <span className="font-bold text-sm sm:text-base text-slate-900 tracking-tight">Caruhun</span>
                 <span className="text-[8px] font-semibold text-amber-600 uppercase tracking-widest mt-0.5">
@@ -147,62 +107,21 @@ export default function Navbar() {
               </div>
             </Link>
 
-            {/* Menu Navigasi Links */}
+            {/* Menu Navigasi Links (Bersih Tanpa Dropdown) */}
             <div className="hidden lg:flex items-center gap-1 font-body-sm text-xs sm:text-sm font-extrabold whitespace-nowrap">
               {navLinks.map((link) => {
-                const isActive = isLinkActive(link.href) || !!link.subItems?.some((s) => isLinkActive(s.href));
+                const isActive = isLinkActive(link.href);
 
                 return (
-                  <div key={link.label} className="relative group whitespace-nowrap">
-                    <Link
-                      href={link.href}
-                      data-path={link.dataPath}
-                      aria-current={isActive ? "page" : undefined}
-                      className={`px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-0.5 whitespace-nowrap hover:text-amber-600 group-hover:text-amber-600 ${
-                        isActive ? "text-amber-600" : "text-slate-800"
-                      }`}>
-                      <span className="whitespace-nowrap">{link.label}</span>
-                      {link.hasDropdown && (
-                        <span className="material-symbols-outlined text-[15px] transition-transform duration-300 group-hover:rotate-180 shrink-0">
-                          expand_more
-                        </span>
-                      )}
-                    </Link>
-
-                    {/* Dropdown Menu List */}
-                    {link.hasDropdown && (
-                      <div className="absolute left-0 top-full pt-2 w-72 z-50 opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 ease-out">
-                        <div className="flex flex-col p-2 bg-white border border-slate-200 rounded-3xl shadow-[0_15px_30px_-5px_rgba(15,23,42,0.12)] gap-1">
-                          {link.subItems?.map((item) => {
-                            const subActive = isLinkActive(item.href);
-                            return (
-                              <Link
-                                key={item.label}
-                                href={item.href}
-                                data-path={item.dataPath}
-                                className={`p-2 rounded-2xl transition-colors flex items-center gap-3 group/item ${
-                                  subActive ? "bg-amber-50 text-amber-700" : "hover:bg-slate-50 text-slate-800"
-                                }`}>
-                                <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center shrink-0 group-hover/item:bg-amber-600 group-hover/item:text-white transition-colors">
-                                  <span className="material-symbols-outlined text-[18px]">{item.icon}</span>
-                                </div>
-                                <div className="flex flex-col leading-snug">
-                                  <span className="text-xs font-bold text-slate-900 group-hover/item:text-amber-700 transition-colors whitespace-nowrap">
-                                    {item.label}
-                                  </span>
-                                  {item.description && (
-                                    <span className="text-[10px] text-slate-500 whitespace-nowrap">
-                                      {item.description}
-                                    </span>
-                                  )}
-                                </div>
-                              </Link>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    aria-current={isActive ? "page" : undefined}
+                    className={`px-3 py-1.5 rounded-lg transition-colors flex items-center whitespace-nowrap hover:text-amber-600 ${
+                      isActive ? "text-amber-600" : "text-slate-800"
+                    }`}>
+                    <span>{link.label}</span>
+                  </Link>
                 );
               })}
             </div>
@@ -253,7 +172,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={handleContactWhatsApp}
-              className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-3.5 py-2 flex items-center gap-1 shadow-sm transition-all active:scale-95 whitespace-nowrap">
+              className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-3.5 py-2 flex items-center gap-1 shadow-sm transition-all active:scale-95 whitespace-nowrap cursor-pointer">
               <span className="material-symbols-outlined text-[15px] shrink-0">chat</span>
               <span className="hidden sm:inline whitespace-nowrap">Hubungi WA</span>
             </button>

@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="id" translate="no" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html lang="id" translate="no" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased scroll-smooth`}>
       <head>
         {/* CSS Material Symbols Outlined untuk Ikon */}
         <link
