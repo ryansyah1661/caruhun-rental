@@ -39,8 +39,9 @@ const UKFlag = ({ className = "w-4 h-3" }: { className?: string }) => (
 
 const navLinks: NavLink[] = [
   { label: "Beranda", href: "/" },
-  { label: "Katalog", href: "/katalog" },
   { label: "Tentang", href: "/tentang" },
+  { label: "Katalog", href: "/katalog" },
+  { label: "Tarif & Ongkir", href: "/tarif" },
   { label: "Keunggulan", href: "/keunggulan" },
   { label: "Partner", href: "/partner" },
 ];

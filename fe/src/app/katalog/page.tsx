@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -145,63 +144,30 @@ export default function KatalogPage() {
       {/* Navbar Header */}
       <Navbar />
 
-      {/* ================= HEADER KATALOG ================= */}
-      <section className="bg-white pt-28 sm:pt-36 lg:pt-40 pb-12 border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
-            <Link href="/" className="hover:text-amber-600 transition-colors">
-              Beranda
-            </Link>
-            <span>/</span>
-            <span className="text-amber-600 font-bold">Katalog Armada</span>
-          </div>
+      {/* ================= HERO KATALOG (SERAGAM CENTERED) ================= */}
+      <section className="bg-white pt-32 sm:pt-36 pb-14 border-b border-slate-200">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-5">
+          <span className="inline-flex items-center px-3.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold">
+            Pilihan Armada Terlengkap & Terawat
+          </span>
 
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div className="space-y-2 max-w-2xl">
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold">
-                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                Pilihan Armada Terlengkap & Terawat
-              </span>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight">
-                Katalog Mobil Sewa Caruhun
-              </h1>
-              <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
-                Temukan unit kendaraan yang sesuai dengan kebutuhan perjalanan Anda. Tersedia transmisi matic & manual,
-                layanan lepas kunci maupun dengan driver profesional.
-              </p>
-            </div>
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
+            Katalog Armada Sewa <br />
+            <span className="text-amber-600">Siap Temani Perjalanan Anda</span>
+          </h1>
 
-            {/* Quick Search Input */}
-            <div className="w-full md:w-80">
-              <div className="bg-slate-50 border border-slate-300 p-1.5 rounded-xl shadow-sm flex items-center gap-2 focus-within:ring-2 focus-within:ring-amber-500/20 focus-within:border-amber-500 transition-all">
-                <span className="material-symbols-outlined text-slate-400 text-[20px] ml-2.5">search</span>
-                <input
-                  type="text"
-                  placeholder="Cari tipe mobil..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full h-9 bg-transparent text-slate-900 text-xs placeholder:text-slate-400 focus:outline-none"
-                />
-                {searchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchQuery("")}
-                    className="text-slate-400 hover:text-slate-600 mr-2 text-xs">
-                    ✕
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
+          <p className="text-xs sm:text-sm text-slate-600 max-w-2xl mx-auto leading-relaxed">
+            Temukan unit kendaraan yang sesuai dengan kebutuhan perjalanan Anda. Tersedia transmisi matic & manual,
+            layanan lepas kunci maupun dengan driver profesional.
+          </p>
         </div>
       </section>
 
       {/* ================= DAFTAR KENDARAAN ================= */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
-        {/* Category Filters Bar */}
-        <div className="flex items-center justify-between gap-4 border-b border-slate-200 pb-4 overflow-x-auto">
-          <div className="flex items-center gap-2">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
+        {/* Bar Kontrol Terpadu (Filter Kategori + Pencarian) */}
+        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-2">
             {[
               { id: "semua", label: "Semua Unit" },
               { id: "mpv", label: "MPV" },
@@ -211,20 +177,42 @@ export default function KatalogPage() {
             ].map((cat) => (
               <button
                 key={cat.id}
+                type="button"
                 onClick={() => setSelectedCategory(cat.id as CategoryFilter)}
-                className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                className={`px-4 py-2 rounded-xl text-xs font-extrabold whitespace-nowrap transition-all cursor-pointer ${
                   selectedCategory === cat.id
-                    ? "bg-slate-900 text-white shadow-sm"
-                    : "bg-white hover:bg-slate-100 text-slate-600 border border-slate-200"
+                    ? "bg-amber-600 text-white shadow-2xs"
+                    : "bg-slate-100 hover:bg-slate-200/70 text-slate-600 hover:text-slate-900"
                 }`}>
                 {cat.label}
               </button>
             ))}
           </div>
 
-          <span className="text-xs text-slate-500 font-medium whitespace-nowrap">
-            Menampilkan <strong className="text-slate-800">{filteredVehicles.length}</strong> unit
-          </span>
+          <div className="flex items-center gap-3 w-full lg:w-auto">
+            <span className="text-xs text-slate-500 font-medium whitespace-nowrap hidden sm:inline">
+              Menampilkan <strong className="text-slate-800">{filteredVehicles.length}</strong> unit
+            </span>
+
+            <div className="bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl flex items-center gap-2 w-full sm:w-64 focus-within:ring-2 focus-within:ring-amber-500/20 focus-within:border-amber-500 transition-all">
+              <span className="material-symbols-outlined text-slate-400 text-[18px]">search</span>
+              <input
+                type="text"
+                placeholder="Cari tipe mobil..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-transparent text-slate-900 text-xs placeholder:text-slate-400 focus:outline-none"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="text-slate-400 hover:text-slate-600 text-xs cursor-pointer">
+                  ✕
+                </button>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Vehicles Grid */}
@@ -288,14 +276,14 @@ export default function KatalogPage() {
                       <button
                         type="button"
                         onClick={() => setSelectedVehicleModal(vehicle)}
-                        className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs transition-colors">
+                        className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs transition-colors cursor-pointer">
                         Detail Spesifikasi
                       </button>
 
                       <button
                         type="button"
                         onClick={() => handleContactWhatsApp(vehicle.name)}
-                        className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition-all active:scale-95">
+                        className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition-all active:scale-95 cursor-pointer">
                         <span className="material-symbols-outlined text-[16px]">chat</span>
                         <span>Hubungi WA</span>
                       </button>
@@ -327,7 +315,7 @@ export default function KatalogPage() {
               <button
                 type="button"
                 onClick={() => setSelectedVehicleModal(null)}
-                className="absolute top-3 right-3 w-8 h-8 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white flex items-center justify-center backdrop-blur-sm transition-colors">
+                className="absolute top-3 right-3 w-8 h-8 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white flex items-center justify-center backdrop-blur-sm transition-colors cursor-pointer">
                 <span className="material-symbols-outlined text-[18px]">close</span>
               </button>
             </div>
@@ -392,7 +380,7 @@ export default function KatalogPage() {
                     setSelectedVehicleModal(null);
                     handleContactWhatsApp(vehicleName);
                   }}
-                  className="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-2 shadow-sm transition-all active:scale-95">
+                  className="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer">
                   <span className="material-symbols-outlined text-[18px]">chat</span>
                   <span>Hubungi Admin WA</span>
                 </button>

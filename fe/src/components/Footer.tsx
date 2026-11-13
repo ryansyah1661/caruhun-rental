@@ -54,15 +54,21 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/tentang" className="hover:text-amber-400 transition-colors">
+                  Tentang Kami
+                </Link>
+              </li>
+              <li>
                 <Link href="/cari" className="hover:text-amber-400 transition-colors">
                   Cek Ketersediaan
                 </Link>
               </li>
               <li>
-                <Link href="/#tentang" className="hover:text-amber-400 transition-colors">
-                  Tentang Kami
+                <Link href="/tarif" className="hover:text-amber-400 transition-colors">
+                  Tarif & Cek Ongkir
                 </Link>
               </li>
+
               <li>
                 <Link href="/keunggulan" className="hover:text-amber-400 transition-colors">
                   Keunggulan & Cara Sewa
