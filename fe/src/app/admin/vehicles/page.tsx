@@ -90,12 +90,12 @@ export default function VehiclesPage() {
             Kelola data master unit kendaraan, status operasional, dan riwayat kilometer.
           </p>
         </div>
-        <button
-          type="button"
+        <Link
+          href="/admin/vehicles/create"
           className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-2 shadow-sm transition-all cursor-pointer">
           <span className="material-symbols-outlined text-[18px]">add_circle</span>
-          <span>+ Tambah Armada Baru</span>
-        </button>
+          <span>Tambah Armada Baru</span>
+        </Link>
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-2xs space-y-5">

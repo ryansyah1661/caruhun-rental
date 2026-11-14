@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/dist/client/link";
 import React, { useState } from "react";
 
 interface ClaimItem {
@@ -49,12 +50,12 @@ export default function ClaimsPage() {
             Laporan kendala teknis kendaraan di lapangan, klaim asuransi, serta pemantauan bengkel.
           </p>
         </div>
-        <button
-          type="button"
+        <Link
+          href="/admin/claims/create"
           className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-2 shadow-sm transition-all cursor-pointer">
           <span className="material-symbols-outlined text-[18px]">report_problem</span>
-          <span>+ Buat Laporan Kerusakan</span>
-        </button>
+          <span>Buat Laporan Kerusakan</span>
+        </Link>
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-2xs space-y-5">
