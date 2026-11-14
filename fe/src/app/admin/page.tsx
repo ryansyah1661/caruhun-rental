@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import Link from "next/link";
 
 // Types untuk data armada
 type FleetStatus = "Tersedia" | "Dipesan" | "Disewa" | "Servis";
@@ -134,26 +135,28 @@ export default function Dashboard() {
             </p>
           </div>
 
-          {/* Quick Actions */}
+          {/* Quick Actions (Tombol Terhubung ke Halaman/Route Masing-masing) */}
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-            <button
-              className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer"
-              type="button">
+            <Link
+              href="/admin/bookings/create"
+              className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer">
               <span className="material-symbols-outlined text-[18px]">add_circle</span>
               <span>Booking Baru</span>
-            </button>
-            <button
-              className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer"
-              type="button">
+            </Link>
+
+            <Link
+              href="/admin/pemeriksaan-kendaraan/keluar"
+              className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer">
               <span className="material-symbols-outlined text-[18px] text-slate-500">logout</span>
               <span>Pemeriksaan Keluar</span>
-            </button>
-            <button
-              className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer"
-              type="button">
+            </Link>
+
+            <Link
+              href="/admin/pemeriksaan-kendaraan/masuk"
+              className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer">
               <span className="material-symbols-outlined text-[18px] text-slate-500">login</span>
               <span>Catat Pengembalian</span>
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -257,11 +260,11 @@ export default function Dashboard() {
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">Armada aktif disewa pelanggan saat ini</p>
             </div>
-            <button
-              type="button"
+            <Link
+              href="/admin/rentals"
               className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer">
               Lihat Semua Rental
-            </button>
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -335,15 +338,14 @@ export default function Dashboard() {
                   <p className="text-xs text-slate-500">5 unit dijadwalkan keluar hari ini</p>
                 </div>
               </div>
-              <button
-                className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer"
-                type="button">
+              <Link
+                href="/admin/keberangkatan"
+                className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer">
                 Lihat Semua (5)
-              </button>
+              </Link>
             </div>
 
             <div className="space-y-3">
-              {/* Item 1 */}
               <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-100/60 transition-colors">
                 <div className="flex items-start gap-3">
                   <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 flex flex-col items-center justify-center text-slate-900 shrink-0 shadow-2xs">
@@ -370,15 +372,14 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </div>
-                <button
-                  className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shrink-0 flex items-center justify-center gap-1.5 shadow-sm transition-all active:scale-95 cursor-pointer"
-                  type="button">
+                <Link
+                  href="/admin/pemeriksaan-kendaraan/keluar"
+                  className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shrink-0 flex items-center justify-center gap-1.5 shadow-sm transition-all active:scale-95 cursor-pointer">
                   <span className="material-symbols-outlined text-[16px]">key</span>
                   <span>Mulai Serah Terima</span>
-                </button>
+                </Link>
               </div>
 
-              {/* Item 2 */}
               <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-100/60 transition-colors">
                 <div className="flex items-start gap-3">
                   <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 flex flex-col items-center justify-center text-slate-900 shrink-0 shadow-2xs">
@@ -393,8 +394,8 @@ export default function Dashboard() {
                       <span className="font-bold text-sm text-slate-900">Toyota Innova Zenix V</span>
                     </div>
                     <p className="text-xs text-slate-600 mt-1">
-                      Penyewa: <strong className="text-slate-900 font-medium">Ibu Maya Anggraini</strong> • Driver
-                      Caruhun
+                      Penyewa: <strong className="text-slate-900 font-medium">Ibu Maya Anggraini</strong> (Driver
+                      Caruhun)
                     </p>
                     <div className="flex items-center gap-2 mt-2">
                       <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
@@ -405,12 +406,12 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </div>
-                <button
-                  className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs shrink-0 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                  type="button">
+                <Link
+                  href="/admin/pemeriksaan-kendaraan"
+                  className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs shrink-0 flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
                   <span className="material-symbols-outlined text-[16px]">assignment</span>
                   <span>Check Fisik</span>
-                </button>
+                </Link>
               </div>
             </div>
           </div>
@@ -427,15 +428,14 @@ export default function Dashboard() {
                   <p className="text-xs text-slate-500">4 unit terjadwal masuk hari ini</p>
                 </div>
               </div>
-              <button
-                className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer"
-                type="button">
+              <Link
+                href="/admin/kedatangan"
+                className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer">
                 Lihat Semua (4)
-              </button>
+              </Link>
             </div>
 
             <div className="space-y-3">
-              {/* Kedatangan 1 */}
               <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-100/60 transition-colors">
                 <div className="flex items-start gap-3">
                   <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 flex flex-col items-center justify-center text-slate-900 shrink-0 shadow-2xs">
@@ -464,15 +464,14 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </div>
-                <button
-                  className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs shrink-0 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                  type="button">
+                <Link
+                  href="/admin/pemeriksaan-kendaraan/masuk"
+                  className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs shrink-0 flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
                   <span className="material-symbols-outlined text-[16px]">fact_check</span>
                   <span>Pemeriksaan Masuk</span>
-                </button>
+                </Link>
               </div>
 
-              {/* Kedatangan Keterlambatan */}
               <div className="bg-rose-50/50 border border-rose-200/80 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-start gap-3">
                   <div className="w-12 h-12 rounded-xl bg-white border border-rose-200 flex flex-col items-center justify-center text-rose-700 shrink-0 shadow-2xs">
@@ -487,7 +486,7 @@ export default function Dashboard() {
                       <span className="font-bold text-sm text-slate-900">Toyota Innova Zenix 2.0</span>
                     </div>
                     <p className="text-xs text-slate-600 mt-1">
-                      Penyewa: <strong className="text-slate-900 font-medium">Agus Prasetyo</strong> • Terlambat +3 Jam
+                      Penyewa: <strong className="text-slate-900 font-medium">Agus Prasetyo</strong> (Terlambat +3 Jam)
                     </p>
                     <div className="flex items-center gap-3 mt-2 text-[11px] font-bold text-rose-700">
                       <span className="flex items-center gap-1">
@@ -616,7 +615,9 @@ export default function Dashboard() {
                       </td>
                       <td className="px-4 py-3.5">
                         <div
-                          className={`flex items-center gap-1.5 font-medium ${item.status === "Servis" ? "text-rose-600" : "text-slate-800"}`}>
+                          className={`flex items-center gap-1.5 font-medium ${
+                            item.status === "Servis" ? "text-rose-600" : "text-slate-800"
+                          }`}>
                           <span
                             className={`material-symbols-outlined text-[16px] ${
                               item.isLocationEnRoute
@@ -713,7 +714,7 @@ export default function Dashboard() {
 }
 
 // ----------------------------------------------------------------------
-// Sub-Komponen Reusable yang Diperhalus
+// Sub-Komponen Reusable
 // ----------------------------------------------------------------------
 
 interface KPICardProps {
@@ -741,8 +742,7 @@ function KPICard({
     <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-2xs flex flex-col justify-between hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between mb-3">
         <span className="font-bold text-xs text-slate-500 uppercase tracking-wider">{title}</span>
-        <span
-          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700`}>
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700">
           <span className={`w-2 h-2 rounded-full ${statusColor}`}></span>
           {statusLabel}
         </span>

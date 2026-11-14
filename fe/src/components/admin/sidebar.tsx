@@ -24,10 +24,10 @@ export const ADMIN_MENU: MenuItem[] = [
   { href: "/admin/customers", label: "Pelanggan", icon: "groups", roles: OFFICE, section: "ARMADA & LAPANGAN" },
   { href: "/admin/attendance", label: "Kehadiran", icon: "badge", roles: ALL, section: "ARMADA & LAPANGAN" },
   {
-    href: "/admin/inspections",
+    href: "/admin/pemeriksaan-kendaraan",
     label: "Pemeriksaan Kendaraan",
     icon: "fact_check",
-    roles: FIELD,
+    roles: ALL, // Diubah ke ALL agar fleksibel diakses admin/office/field
     section: "ARMADA & LAPANGAN",
   },
   { href: "/admin/claims", label: "Kerusakan & Klaim", icon: "car_crash", roles: FIELD, section: "ARMADA & LAPANGAN" },
@@ -100,7 +100,12 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                   </div>
 
                   {sectionItems.map((m) => {
-                    const active = m.href === "/admin" ? pathname === "/admin" : pathname.startsWith(m.href);
+                    // Logika aktif diperbarui agar mencakup sub-halaman (seperti /keluar dan /masuk)
+                    const active =
+                      m.href === "/admin"
+                        ? pathname === "/admin"
+                        : pathname === m.href || pathname.startsWith(`${m.href}/`);
+
                     return (
                       <Link
                         key={m.href}

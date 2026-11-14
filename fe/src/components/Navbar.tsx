@@ -78,8 +78,8 @@ export default function Navbar() {
   };
 
   const handleContactWhatsApp = () => {
-    const adminPhoneNumber = "6281234567890";
-    const msg = "Halo Admin Caruhun Rental, saya ingin berkonsultasi mengenai sewa armada kendaraan.";
+    const adminPhoneNumber = "6282112102262";
+    const msg = "Halo Admin Caruhun Rental, saya ingin bertanya mengenai sewa armada kendaraan.";
     window.open(`https://wa.me/${adminPhoneNumber}?text=${encodeURIComponent(msg)}`, "_blank");
   };
 
@@ -102,12 +102,7 @@ export default function Navbar() {
                   alt="Logo Caruhun"
                   className="h-9 w-auto object-contain shrink-0 transition-transform duration-300 group-hover:scale-105"
                 />
-                <div className="flex flex-col leading-none">
-                  <span className="font-bold text-sm sm:text-base text-slate-900 tracking-tight">Caruhun</span>
-                  <span className="text-[8px] font-semibold text-amber-600 uppercase tracking-widest mt-0.5">
-                    Rental Armada
-                  </span>
-                </div>
+                <div className="flex flex-col leading-none"></div>
               </Link>
 
               {/* Menu Navigasi Links */}

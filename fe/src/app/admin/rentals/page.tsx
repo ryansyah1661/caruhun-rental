@@ -92,8 +92,8 @@ export default function RentalHistoryPage() {
         </div>
       </div>
 
-      {/* ================= STATS / METRICS CARDS (2 Kolom) ================= */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* ================= STATS / METRICS CARDS (3 Kolom Dikembalikan) ================= */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs flex items-center justify-between">
           <div>
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
@@ -113,6 +113,16 @@ export default function RentalHistoryPage() {
           </div>
           <div className="w-12 h-12 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold">
             <span className="material-symbols-outlined">directions_car</span>
+          </div>
+        </div>
+
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs flex items-center justify-between">
+          <div>
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Pendapatan Selesai</span>
+            <h3 className="text-2xl font-black text-slate-900 mt-1">Rp 74.2 Juta</h3>
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+            <span className="material-symbols-outlined">payments</span>
           </div>
         </div>
       </div>

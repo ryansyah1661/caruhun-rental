@@ -17,17 +17,17 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 pb-12 border-b border-stone-800">
           {/* Kolom 1: Identitas Brand (5 cols) */}
           <div className="lg:col-span-5 space-y-4">
-            <Link href="/" className="inline-flex items-center gap-3 group">
-              <div className="w-10 h-10 rounded-xl bg-white p-1.5 flex items-center justify-center shrink-0 shadow-sm">
+            <Link href="/" className="inline-flex items-center gap-3.5 group">
+              <div className="w-12 h-12 flex items-center justify-center shrink-0">
                 <img
                   src="/images/logo.png"
                   alt="Logo Caruhun"
-                  className="h-full w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                  className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
                 />
               </div>
-              <div className="flex flex-col leading-none">
-                <span className="font-extrabold text-base text-white tracking-tight">Caruhun</span>
-                <span className="text-[9px] font-bold text-amber-500 uppercase tracking-widest mt-1">
+              <div className="flex flex-col leading-tight">
+                <span className="font-extrabold text-lg text-white tracking-tight">CARUHUN TRANS</span>
+                <span className="text-[10px] font-bold text-amber-500 uppercase tracking-widest mt-0.5">
                   Rental Armada
                 </span>
               </div>
@@ -68,7 +68,6 @@ export default function Footer() {
                   Tarif & Cek Ongkir
                 </Link>
               </li>
-
               <li>
                 <Link href="/keunggulan" className="hover:text-amber-400 transition-colors">
                   Keunggulan & Cara Sewa
@@ -111,14 +110,8 @@ export default function Footer() {
 
           {/* Kolom 4: Kontak & Operasional (3 cols) */}
           <div className="lg:col-span-3 space-y-3.5">
-            <h3 className="text-xs font-extrabold uppercase tracking-wider text-white">Pool & Kontak</h3>
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-white">Kontak</h3>
             <ul className="space-y-3 text-xs text-stone-400">
-              <li className="flex items-start gap-2">
-                <span className="material-symbols-outlined text-[16px] text-amber-500 shrink-0 mt-0.5">
-                  location_on
-                </span>
-                <span>Pool Utama Caruhun Armada, Jawa Barat</span>
-              </li>
               <li className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-[16px] text-amber-500 shrink-0">schedule</span>
                 <span>Operasional Pool: 06.00 – 22.00 WIB</span>
@@ -126,9 +119,9 @@ export default function Footer() {
               <li className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-[16px] text-amber-500 shrink-0">call</span>
                 <a
-                  href="tel:+6281234567890"
+                  href="tel:+6282112102262"
                   className="hover:text-amber-400 transition-colors font-medium text-stone-300">
-                  +62 812-3456-7890
+                  +62 821-1210-2262
                 </a>
               </li>
               <li className="flex items-center gap-2">
@@ -143,7 +136,7 @@ export default function Footer() {
 
         {/* Bottom Copyright Bar */}
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-stone-500">
-          <p>&copy; {new Date().getFullYear()} Caruhun Rental Armada. Seluruh hak cipta dilindungi.</p>
+          <p>&copy; {new Date().getFullYear()} PT Caruhun Trans. Seluruh hak cipta dilindungi.</p>
           <div className="flex items-center gap-4">
             <Link href="/keunggulan#cara-sewa" className="hover:text-stone-300 transition-colors">
               Syarat & Ketentuan Sewa
