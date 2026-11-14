@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 
 // Types
 type UnitStatus = "Tersedia" | "Dipesan" | "Disewa" | "Servis";
 
-interface TimelineBooking {
+interface CalendarBooking {
   id: string;
   bookingCode: string;
   renterName: string;
@@ -13,10 +13,10 @@ interface TimelineBooking {
   isKtpVerified: boolean;
   isSimActive: boolean;
   unitName: string;
-  nopol: string;
+  unitInitial: string;
+  shortNopol: string;
   unitSpecs: string;
-  startDay: number; // 21 - 27 Okt
-  endDay: number;
+  date: number;
   startDateFull: string;
   endDateFull: string;
   duration: string;
@@ -36,20 +36,39 @@ interface RentalTableItem {
   status: UnitStatus | "Selesai";
 }
 
-// Dummy Data Timeline
-const TIMELINE_DATA: TimelineBooking[] = [
+// Dummy Data Booking Berdasarkan Tanggal di Bulan Oktober 2026
+const MONTH_BOOKINGS: CalendarBooking[] = [
   {
     id: "1",
+    bookingCode: "#CRH-2410-088",
+    renterName: "Rizky Kurniawan",
+    renterPhone: "0851-4161-0411",
+    isKtpVerified: true,
+    isSimActive: true,
+    unitName: "Honda Brio RS",
+    unitInitial: "BRO",
+    shortNopol: "D 2091 AGH",
+    unitSpecs: "1.2 CVT • 5 Kursi",
+    date: 10,
+    startDateFull: "10 Okt 2026 • 10:00 WIB",
+    endDateFull: "12 Okt 2026 • 10:00 WIB",
+    duration: "2 Hari",
+    status: "Disewa",
+    poolLocation: "Pool Utama",
+    adminName: "Naila",
+  },
+  {
+    id: "2",
     bookingCode: "#CRH-2410-091",
     renterName: "PT Surya Logistik",
     renterPhone: "0812-3456-7890",
     isKtpVerified: true,
     isSimActive: true,
-    unitName: "Toyota Avanza",
-    nopol: "B 1482 KFD",
+    unitName: "Toyota Avanza 1.5 G",
+    unitInitial: "AVZ",
+    shortNopol: "B 1482 KFD",
     unitSpecs: "1.5 G MT • 7 Kursi",
-    startDay: 24,
-    endDay: 26,
+    date: 24,
     startDateFull: "24 Okt 2026 • 09:00 WIB",
     endDateFull: "26 Okt 2026 • 09:00 WIB",
     duration: "2 Hari Penuh (48 Jam)",
@@ -58,42 +77,23 @@ const TIMELINE_DATA: TimelineBooking[] = [
     adminName: "Budi S.",
   },
   {
-    id: "2",
+    id: "3",
     bookingCode: "#BK-2024-1024",
     renterName: "Hendro Wicaksono",
     renterPhone: "0812-9876-5432",
     isKtpVerified: true,
     isSimActive: true,
     unitName: "Innova Zenix 2.0 V",
-    nopol: "B 2884 SSR",
+    unitInitial: "ZNX",
+    shortNopol: "B 2884 SSR",
     unitSpecs: "2.0 V AT • 7 Kursi",
-    startDay: 25,
-    endDay: 28,
-    startDateFull: "25 Okt 2026 • 09:00 WIB",
+    date: 24,
+    startDateFull: "24 Okt 2026 • 09:00 WIB",
     endDateFull: "28 Okt 2026 • 09:00 WIB",
-    duration: "3 Hari Penuh (72 Jam)",
+    duration: "4 Hari Penuh",
     status: "Dipesan",
     poolLocation: "Pool Cilandak (Siap Ready)",
     adminName: "Budi S.",
-  },
-  {
-    id: "3",
-    bookingCode: "#CRH-2410-088",
-    renterName: "Rizky Kurniawan",
-    renterPhone: "0851-4161-0411",
-    isKtpVerified: true,
-    isSimActive: true,
-    unitName: "Honda Brio RS",
-    nopol: "D 2091 AGH",
-    unitSpecs: "1.2 CVT • 5 Kursi",
-    startDay: 22,
-    endDay: 24,
-    startDateFull: "22 Okt 2026 • 10:00 WIB",
-    endDateFull: "24 Okt 2026 • 10:00 WIB",
-    duration: "2 Hari",
-    status: "Disewa",
-    poolLocation: "Pool Utama",
-    adminName: "Naila",
   },
   {
     id: "4",
@@ -103,12 +103,12 @@ const TIMELINE_DATA: TimelineBooking[] = [
     isKtpVerified: false,
     isSimActive: false,
     unitName: "HiAce Commuter",
-    nopol: "B 1019 TRB",
+    unitInitial: "HAC",
+    shortNopol: "B 1019 TRB",
     unitSpecs: "2.5 Diesel • 16 Kursi",
-    startDay: 23,
-    endDay: 25,
-    startDateFull: "23 Okt 2026",
-    endDateFull: "25 Okt 2026",
+    date: 25,
+    startDateFull: "25 Okt 2026",
+    endDateFull: "27 Okt 2026",
     duration: "Bengkel Resmi",
     status: "Servis",
     poolLocation: "Auto2000 Cilandak",
@@ -127,31 +127,26 @@ const DAFTAR_RENTAL_TABLE: RentalTableItem[] = [
     packageType: "Paket 1 Hari (24 Jam)",
     status: "Disewa",
   },
-  {
-    id: "2",
-    renterName: "Rizki Ramdhani",
-    renterPhone: "081244321000",
-    unitName: "Honda PCX 160",
-    nopol: "B 1234 BKC",
-    period: "14 Okt 2026 - 15 Okt 2026",
-    packageType: "Custom Paket 2 Hari",
-    status: "Selesai",
-  },
 ];
 
 export default function BookingCalendarPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [activeBooking, setActiveBooking] = useState<TimelineBooking | null>(TIMELINE_DATA[1]); // Default B 2884 SSR
+  const [activeBooking, setActiveBooking] = useState<CalendarBooking | null>(MONTH_BOOKINGS[1]);
 
-  const daysHeader = [
-    { dayName: "Sen", dateNum: 21 },
-    { dayName: "Sel", dateNum: 22 },
-    { dayName: "Rab", dateNum: 23 },
-    { dayName: "Kam", dateNum: 24, isToday: true },
-    { dayName: "Jum", dateNum: 25 },
-    { dayName: "Sab", dateNum: 26 },
-    { dayName: "Ming", dateNum: 27 },
-  ];
+  const calendarDays = useMemo(() => {
+    const days = [];
+    const emptySlotsAtStart = 3;
+
+    for (let i = 0; i < emptySlotsAtStart; i++) {
+      days.push({ dayNumber: null, isCurrentMonth: false });
+    }
+
+    for (let d = 1; d <= 31; d++) {
+      days.push({ dayNumber: d, isCurrentMonth: true });
+    }
+
+    return days;
+  }, []);
 
   return (
     <div className="w-full font-body-md text-slate-800 antialiased bg-slate-50/50 min-h-screen p-6 lg:p-8 space-y-6">
@@ -160,13 +155,13 @@ export default function BookingCalendarPage() {
         <div>
           <div className="flex items-center gap-2 text-xs text-slate-400 mb-1 font-medium">
             <span>Dashboard</span> &rsaquo; <span>Operasional Armada</span> &rsaquo;{" "}
-            <span className="text-slate-800 font-bold">Kalender Armada</span>
+            <span className="text-slate-800 font-bold">Kalender Bulanan</span>
           </div>
           <h1 className="text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Kalender Armada & Reservasi
+            Kalender Reservasi Bulanan
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Visualisasi jadwal reservasi, status operasional, dan ketersediaan armada per hari.
+            Tampilan kalender interaktif bulan Oktober 2026. Klik pada inisial/plat mobil untuk melihat detail sewa.
           </p>
         </div>
 
@@ -175,13 +170,7 @@ export default function BookingCalendarPage() {
             type="button"
             className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer">
             <span className="material-symbols-outlined text-[18px] text-slate-500">calendar_today</span>
-            <span>Hari Ini</span>
-          </button>
-          <button
-            type="button"
-            className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer">
-            <span className="material-symbols-outlined text-[18px] text-slate-500">file_download</span>
-            <span>Ekspor Jadwal</span>
+            <span>Oktober 2026</span>
           </button>
           <button
             type="button"
@@ -192,12 +181,12 @@ export default function BookingCalendarPage() {
         </div>
       </div>
 
-      {/* ================= MAIN CONTENT LAYOUT (TIMELINE & FLYOUT DETAIL) ================= */}
+      {/* ================= MAIN CONTENT LAYOUT ================= */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
-        {/* LEFT / CENTER: TIMELINE GANTT CHART */}
+        {/* LEFT / CENTER: INTERACTIVE MONTHLY CALENDAR GRID */}
         <div className={`${activeBooking ? "xl:col-span-8" : "xl:col-span-12"} transition-all space-y-6`}>
           <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-2xs space-y-5">
-            {/* Top Filter Bar */}
+            {/* Top Filter & Legend */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
               <div className="flex items-center gap-2 overflow-x-auto text-xs">
                 <button
@@ -218,122 +207,143 @@ export default function BookingCalendarPage() {
                   }`}>
                   MPV / Keluarga <span className="ml-1 opacity-80">24</span>
                 </button>
-                <button
-                  onClick={() => setSelectedCategory("city")}
-                  className={`px-3.5 py-2 rounded-xl font-bold transition-all cursor-pointer ${
-                    selectedCategory === "city"
-                      ? "bg-amber-600 text-white shadow-xs"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                  }`}>
-                  City Car <span className="ml-1 opacity-80">15</span>
-                </button>
               </div>
 
-              {/* Status Indicator Legend */}
+              {/* Status Legend */}
               <div className="flex items-center gap-3 text-xs font-semibold text-slate-500 shrink-0">
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Tersedia
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Tersedia
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-amber-500"></span> Dipesan
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Dipesan
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-sky-500"></span> Disewa
+                  <span className="w-2.5 h-2.5 rounded-full bg-sky-500"></span> Disewa
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-rose-500"></span> Servis
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Servis
                 </span>
               </div>
             </div>
 
-            {/* TIMELINE TABLE / MATRIX */}
-            <div className="overflow-x-auto">
-              <div className="min-w-[700px]">
-                {/* Timeline Days Header */}
-                <div className="grid grid-cols-12 gap-3 pb-3 border-b border-slate-100 text-center text-xs font-bold text-slate-500">
-                  <div className="col-span-4 text-left px-2">Armada Pool (4 Unit Aktif)</div>
-                  <div className="col-span-8 grid grid-cols-7 gap-1.5">
-                    {daysHeader.map((d) => (
-                      <div
-                        key={d.dateNum}
-                        className={`p-2 rounded-xl border ${
-                          d.isToday
-                            ? "bg-amber-50 border-amber-300 text-amber-900 shadow-2xs"
-                            : "bg-slate-50/70 border-slate-200/70 text-slate-600"
-                        }`}>
-                        <span className="block text-[10px] uppercase font-bold text-slate-400">{d.dayName}</span>
-                        <span className="text-sm font-extrabold">{d.dateNum}</span>
-                        {d.isToday && (
-                          <span className="block text-[9px] font-extrabold uppercase tracking-tighter text-amber-600 mt-0.5">
-                            HARI INI
+            {/* Navigasi Bulan */}
+            <div className="flex items-center justify-between bg-slate-50 px-4 py-3 rounded-xl border border-slate-200/60">
+              <div className="flex items-center gap-2 text-xs font-extrabold text-slate-900">
+                <span className="material-symbols-outlined text-[18px] text-amber-600">event_note</span>
+                <span>Oktober 2026 — Jadwal Operasional Armada</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <button className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-100 transition-colors cursor-pointer shadow-2xs">
+                  &lsaquo; Sept
+                </button>
+                <button className="px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-100 transition-colors cursor-pointer shadow-2xs">
+                  Hari Ini
+                </button>
+                <button className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-100 transition-colors cursor-pointer shadow-2xs">
+                  Nov &rsaquo;
+                </button>
+              </div>
+            </div>
+
+            {/* KALENDER BULANAN GRID INTERAKTIF */}
+            <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-2xs">
+              {/* Header Hari */}
+              <div className="grid grid-cols-7 bg-slate-100/80 border-b border-slate-200 text-center text-xs font-bold text-slate-700 py-3">
+                <span>Senin</span>
+                <span>Selasa</span>
+                <span>Rabu</span>
+                <span>Kamis</span>
+                <span>Jumat</span>
+                <span>Sabtu</span>
+                <span>Minggu</span>
+              </div>
+
+              {/* Kotak Tanggal Grid */}
+              <div className="grid grid-cols-7 auto-rows-fr bg-slate-200 gap-px">
+                {calendarDays.map((slot, index) => {
+                  if (!slot.isCurrentMonth || slot.dayNumber === null) {
+                    return <div key={index} className="bg-slate-50/40 min-h-[145px] p-2"></div>;
+                  }
+
+                  const dayBookings = MONTH_BOOKINGS.filter((b) => b.date === slot.dayNumber);
+                  const isToday = slot.dayNumber === 24;
+                  const isSelected = activeBooking && dayBookings.some((b) => b.id === activeBooking.id);
+
+                  return (
+                    <div
+                      key={index}
+                      className={`bg-white min-h-[145px] p-2 flex flex-col justify-between transition-all relative group ${
+                        isToday ? "bg-amber-50/40 ring-2 ring-amber-400 inset-0 z-10" : "hover:bg-slate-50/70"
+                      } ${isSelected ? "bg-sky-50/30" : ""}`}>
+                      {/* Nomor Tanggal & Indikator Unit */}
+                      <div className="flex items-center justify-between">
+                        <span
+                          className={`text-xs font-black w-6 h-6 rounded-lg flex items-center justify-center transition-all ${
+                            isToday ? "bg-amber-600 text-white shadow-sm" : "text-slate-700 bg-slate-100/60"
+                          }`}>
+                          {slot.dayNumber}
+                        </span>
+                        {dayBookings.length > 0 && (
+                          <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
+                            {dayBookings.length} unit
                           </span>
                         )}
                       </div>
-                    ))}
-                  </div>
-                </div>
 
-                {/* Timeline Rows */}
-                <div className="divide-y divide-slate-100">
-                  {TIMELINE_DATA.map((item) => (
-                    <div
-                      key={item.id}
-                      className="grid grid-cols-12 gap-3 py-3.5 items-center hover:bg-slate-50/80 transition-colors rounded-xl px-2">
-                      {/* Unit Detail Info */}
-                      <div className="col-span-4 flex items-center gap-3 pr-2">
-                        <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 shrink-0">
-                          <span className="material-symbols-outlined text-[20px]">directions_car</span>
-                        </div>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h4 className="font-bold text-sm text-slate-900 truncate">{item.unitName}</h4>
-                            <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-900 text-white font-semibold">
-                              {item.nopol}
-                            </span>
-                          </div>
-                          <p className="text-xs text-slate-500 truncate mt-0.5">{item.unitSpecs}</p>
-                        </div>
-                      </div>
+                      {/* Badge Inisial & Plat Mobil Tanpa Potong Teks */}
+                      <div className="space-y-1.5 mt-1.5">
+                        {dayBookings.map((bk) => {
+                          let badgeBg = "bg-sky-50 text-sky-800 border-sky-200 hover:bg-sky-600 hover:text-white";
+                          if (bk.status === "Dipesan")
+                            badgeBg = "bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-600 hover:text-white";
+                          if (bk.status === "Servis")
+                            badgeBg = "bg-rose-50 text-rose-800 border-rose-200 hover:bg-rose-600 hover:text-white";
 
-                      {/* Bar Grid Visual */}
-                      <div className="col-span-8 grid grid-cols-7 gap-1.5 relative items-center h-10">
-                        <div
-                          onClick={() => setActiveBooking(item)}
-                          className={`cursor-pointer absolute h-8 rounded-xl px-3 flex items-center justify-between text-xs font-bold text-white shadow-sm hover:brightness-105 transition-all ${
-                            item.status === "Disewa"
-                              ? "bg-sky-600"
-                              : item.status === "Dipesan"
-                                ? "bg-amber-500"
-                                : "bg-rose-600"
-                          }`}
-                          style={{
-                            left: `${((item.startDay - 21) / 7) * 100}%`,
-                            width: `${((item.endDay - item.startDay + 1) / 7) * 100}%`,
-                          }}>
-                          <span className="truncate">{item.renterName}</span>
-                          <span className="text-[10px] opacity-90 font-mono hidden sm:inline font-semibold">
-                            {item.bookingCode}
-                          </span>
-                        </div>
+                          const isCurrentActive = activeBooking?.id === bk.id;
+
+                          return (
+                            <div
+                              key={bk.id}
+                              onClick={() => setActiveBooking(bk)}
+                              className={`cursor-pointer px-2 py-1.5 rounded-xl border text-[10px] font-black shadow-2xs transition-all flex flex-col gap-0.5 ${badgeBg} ${
+                                isCurrentActive ? "ring-2 ring-amber-500 shadow-sm scale-[1.02]" : ""
+                              }`}
+                              title={`Klik untuk lihat detail ${bk.unitName}`}>
+                              <div className="flex items-center justify-between">
+                                <span className="flex items-center gap-1 font-extrabold">
+                                  <span className="material-symbols-outlined text-[12px] opacity-75">
+                                    {bk.status === "Servis" ? "build" : "directions_car"}
+                                  </span>
+                                  {bk.unitInitial}
+                                </span>
+                                <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
+                              </div>
+                              <span className="font-mono text-[9px] opacity-90 tracking-tighter truncate font-semibold">
+                                {bk.shortNopol}
+                              </span>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
             </div>
           </div>
         </div>
 
-        {/* RIGHT: DETAIL FLYOUT DRAWER */}
+        {/* RIGHT: INTERACTIVE DETAIL FLYOUT DRAWER */}
         {activeBooking && (
-          <div className="xl:col-span-4 bg-white rounded-2xl border border-slate-200/80 shadow-md p-6 space-y-5 sticky top-6">
+          <div className="xl:col-span-4 bg-white rounded-2xl border border-slate-200/80 shadow-md p-6 space-y-5 sticky top-6 animate-in fade-in duration-200">
             {/* Top Close Bar */}
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <span className="text-[11px] font-bold text-amber-700 uppercase tracking-wide">
-                  {activeBooking.status} • Menunggu Serah Terima
+                <span className="text-[11px] font-extrabold text-amber-700 uppercase tracking-wide flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                  {activeBooking.status} • Detail Reservasi
                 </span>
-                <h3 className="font-mono text-xl font-extrabold text-slate-900 mt-0.5">{activeBooking.bookingCode}</h3>
+                <h3 className="font-mono text-xl font-black text-slate-900 mt-0.5">{activeBooking.bookingCode}</h3>
               </div>
               <button
                 onClick={() => setActiveBooking(null)}
@@ -343,15 +353,15 @@ export default function BookingCalendarPage() {
             </div>
 
             {/* Vehicle Card Header */}
-            <div className="p-3.5 bg-slate-50 border border-slate-100 rounded-2xl flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-amber-600 shrink-0 shadow-2xs">
-                <span className="material-symbols-outlined text-2xl">directions_car</span>
+            <div className="p-4 bg-slate-50 border border-slate-100 rounded-2xl flex items-center gap-3.5 shadow-2xs">
+              <div className="w-12 h-12 rounded-xl bg-amber-600 text-white flex items-center justify-center font-black shrink-0 shadow-sm text-xs">
+                {activeBooking.unitInitial}
               </div>
               <div>
-                <h4 className="font-bold text-sm text-slate-900">{activeBooking.unitName}</h4>
+                <h4 className="font-extrabold text-sm text-slate-900">{activeBooking.unitName}</h4>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-slate-900 text-white">
-                    {activeBooking.nopol}
+                    {activeBooking.shortNopol}
                   </span>
                   <span className="text-xs text-emerald-700 font-semibold">{activeBooking.poolLocation}</span>
                 </div>
@@ -363,9 +373,9 @@ export default function BookingCalendarPage() {
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
                 Informasi Penyewa
               </span>
-              <div className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200/80 bg-white">
+              <div className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200/80 bg-white shadow-2xs">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-amber-100 text-amber-800 font-bold flex items-center justify-center text-xs">
+                  <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 font-black flex items-center justify-center text-xs">
                     HW
                   </div>
                   <div>
@@ -389,7 +399,7 @@ export default function BookingCalendarPage() {
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
                 Jadwal & Penyerahan
               </span>
-              <div className="bg-slate-50 border border-slate-100 p-3.5 rounded-2xl space-y-2.5 text-xs">
+              <div className="bg-slate-50 border border-slate-100 p-4 rounded-2xl space-y-2.5 text-xs shadow-2xs">
                 <div className="flex justify-between items-center">
                   <span className="text-slate-500">Mulai Sewa (Pick-up):</span>
                   <strong className="text-slate-900">{activeBooking.startDateFull}</strong>
@@ -398,8 +408,9 @@ export default function BookingCalendarPage() {
                   <span className="text-slate-500">Pengembalian (Drop-off):</span>
                   <strong className="text-slate-900">{activeBooking.endDateFull}</strong>
                 </div>
-                <div className="pt-2 border-t border-slate-200/60 text-sky-700 font-bold">
-                  Durasi: {activeBooking.duration}
+                <div className="pt-2.5 border-t border-slate-200/60 text-sky-700 font-bold flex items-center justify-between">
+                  <span>Durasi Sewa:</span>
+                  <span className="px-2 py-0.5 rounded bg-sky-50 border border-sky-200">{activeBooking.duration}</span>
                 </div>
               </div>
             </div>
