@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import Link from "next/link";
 
 // Types untuk data armada
@@ -14,14 +14,12 @@ interface FleetItem {
   year: number;
   category: string;
   status: FleetStatus;
-  location: string;
-  isLocationEnRoute?: boolean;
   odometer: string;
   fuel: string;
   fuelPercentage: number;
   fuelNote?: string;
   actionText: string;
-  actionIcon: string;
+  actionHref: string;
 }
 
 // Dummy data armada sesuai tabel HTML
@@ -34,12 +32,11 @@ const INITIAL_FLEET: FleetItem[] = [
     year: 2023,
     category: "MPV 7-Seater",
     status: "Tersedia",
-    location: "Pool Utama - Cilandak",
     odometer: "34.120 km",
     fuel: "BBM 90% (Penuh)",
     fuelPercentage: 90,
-    actionText: "Detail",
-    actionIcon: "more_vert",
+    actionText: "Kelola Unit",
+    actionHref: "/admin/kendaraan/1",
   },
   {
     id: "2",
@@ -49,12 +46,11 @@ const INITIAL_FLEET: FleetItem[] = [
     year: 2024,
     category: "Premium MPV",
     status: "Dipesan",
-    location: "Pool Utama - Bay 3",
     odometer: "12.450 km",
     fuel: "BBM 75%",
     fuelPercentage: 75,
-    actionText: "Detail",
-    actionIcon: "more_vert",
+    actionText: "Lihat Booking",
+    actionHref: "/admin/bookings",
   },
   {
     id: "3",
@@ -64,13 +60,11 @@ const INITIAL_FLEET: FleetItem[] = [
     year: 2022,
     category: "City Car",
     status: "Disewa",
-    location: "Jalan Tol Jagorawi KM 28",
-    isLocationEnRoute: true,
     odometer: "48.910 km",
     fuel: "BBM 60%",
     fuelPercentage: 60,
     actionText: "Lacak GPS",
-    actionIcon: "gps_fixed",
+    actionHref: "/admin/lacak/3",
   },
   {
     id: "4",
@@ -80,13 +74,11 @@ const INITIAL_FLEET: FleetItem[] = [
     year: 2023,
     category: "L-MPV",
     status: "Disewa",
-    location: "Bandung - Dago Pakar",
-    isLocationEnRoute: true,
     odometer: "29.800 km",
     fuel: "BBM 85%",
     fuelPercentage: 85,
     actionText: "Lacak GPS",
-    actionIcon: "gps_fixed",
+    actionHref: "/admin/lacak/4",
   },
   {
     id: "5",
@@ -96,19 +88,65 @@ const INITIAL_FLEET: FleetItem[] = [
     year: 2021,
     category: "Minibus 16-Seat",
     status: "Servis",
-    location: "Bengkel Resmi Auto2000 TB Simatupang",
     odometer: "94.200 km",
     fuel: "Ganti Oli & Kampas Rem",
     fuelPercentage: 0,
     fuelNote: "service",
     actionText: "SPK Servis",
-    actionIcon: "receipt_long",
+    actionHref: "/admin/servis/5",
   },
 ];
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [isContactModalOpen, setIsContactModalOpen] = useState<boolean>(false);
+  const [isAdvancedFilterOpen, setIsAdvancedFilterOpen] = useState<boolean>(false);
+
+  // State untuk filter lanjutan
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedTransmission, setSelectedTransmission] = useState<string>("");
+
+  // State dropdown kustom agar tidak menggunakan select bawaan browser
+  const [isCategoryOpen, setIsCategoryOpen] = useState<boolean>(false);
+  const [isTransmissionOpen, setIsTransmissionOpen] = useState<boolean>(false);
+
+  const categoryRef = useRef<HTMLDivElement>(null);
+  const transmissionRef = useRef<HTMLDivElement>(null);
+
+  // Tutup dropdown saat klik di luar
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (categoryRef.current && !categoryRef.current.contains(event.target as Node)) {
+        setIsCategoryOpen(false);
+      }
+      if (transmissionRef.current && !transmissionRef.current.contains(event.target as Node)) {
+        setIsTransmissionOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Data kontak penyewa yang terlambat
+  const overdueContacts = [
+    {
+      unitName: "Toyota Innova Zenix",
+      nopol: "B 1928 TYA",
+      renterName: "Agus Prasetyo",
+      renterPhone: "081234567890",
+      returnTime: "11:00 WIB",
+      overdueDuration: "+3 Jam",
+    },
+    {
+      unitName: "Toyota Avanza",
+      nopol: "B 3819 UKL",
+      renterName: "Bambang Pamungkas",
+      renterPhone: "085698765432",
+      returnTime: "10:15 WIB",
+      overdueDuration: "+3 Jam 45 Menit",
+    },
+  ];
 
   // Filter logika tabel
   const filteredFleet = useMemo(() => {
@@ -116,9 +154,14 @@ export default function Dashboard() {
       const matchesTab = activeTab === "all" || item.status === activeTab;
       const fullSearchString = `${item.nopol} ${item.name} ${item.category}`.toLowerCase();
       const matchesSearch = fullSearchString.includes(searchQuery.toLowerCase());
-      return matchesTab && matchesSearch;
+
+      const matchesCategory = !selectedCategory || item.category.toLowerCase().includes(selectedCategory.toLowerCase());
+      const matchesTransmission =
+        !selectedTransmission || item.transmission.toLowerCase().includes(selectedTransmission.toLowerCase());
+
+      return matchesTab && matchesSearch && matchesCategory && matchesTransmission;
     });
-  }, [activeTab, searchQuery]);
+  }, [activeTab, searchQuery, selectedCategory, selectedTransmission]);
 
   return (
     <div className="w-full font-body-md text-slate-800 antialiased bg-slate-50/50 min-h-screen">
@@ -135,7 +178,7 @@ export default function Dashboard() {
             </p>
           </div>
 
-          {/* Quick Actions (Tombol Terhubung ke Halaman/Route Masing-masing) */}
+          {/* Quick Actions */}
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             <Link
               href="/admin/bookings/create"
@@ -176,6 +219,7 @@ export default function Dashboard() {
             </div>
           </div>
           <button
+            onClick={() => setIsContactModalOpen(true)}
             className="px-4 py-2 rounded-xl bg-white border border-amber-300 text-amber-800 hover:bg-amber-100/60 font-bold text-xs transition-colors flex items-center gap-2 shrink-0 self-start sm:self-auto cursor-pointer shadow-2xs"
             type="button">
             <span className="material-symbols-outlined text-[16px]">phone_in_talk</span>
@@ -269,6 +313,7 @@ export default function Dashboard() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
             <ActiveRentalCard
+              id="1"
               unitName="Toyota Fortuner"
               nopol="B 1966 SBB"
               renterName="Deni"
@@ -282,10 +327,11 @@ export default function Dashboard() {
               isOverdue={true}
             />
             <ActiveRentalCard
+              id="2"
               unitName="Toyota Calya"
               nopol="D 3333 YR"
               renterName="Rini Azlia"
-              renterPhone="0817854"
+              renterPhone="08178542190"
               departureTime="12 Okt, 12:07"
               returnTime="13 Okt, 12:10"
               totalFee="Rp450.000"
@@ -296,6 +342,7 @@ export default function Dashboard() {
               isOverdue={true}
             />
             <ActiveRentalCard
+              id="3"
               unitName="Honda Brio"
               nopol="B 1234 BKC"
               renterName="Rizki Ramdhani"
@@ -309,6 +356,7 @@ export default function Dashboard() {
               isOverdue={true}
             />
             <ActiveRentalCard
+              id="4"
               unitName="Mitsubishi Pajero"
               nopol="E 5555 LJ"
               renterName="Asha"
@@ -339,7 +387,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <Link
-                href="/admin/keberangkatan"
+                href="/admin/departures"
                 className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer">
                 Lihat Semua (5)
               </Link>
@@ -429,7 +477,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <Link
-                href="/admin/kedatangan"
+                href="/admin/arrivals"
                 className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer">
                 Lihat Semua (4)
               </Link>
@@ -497,8 +545,17 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <button
-                  className="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shrink-0 flex items-center justify-center gap-1.5 shadow-sm transition-all active:scale-95 cursor-pointer"
-                  type="button">
+                  type="button"
+                  onClick={() => {
+                    const renterName = "Agus Prasetyo";
+                    const renterPhone = "081234567890";
+                    const unitName = "Toyota Innova Zenix 2.0";
+                    const nopol = "B 1928 TYA";
+                    const returnTime = "11:00 WIB";
+                    const message = `Halo Kak ${renterName}, kami dari Caruhun Rental mengingatkan bahwa unit ${unitName} (${nopol}) sudah melewati jadwal pengembalian (${returnTime}). Mohon konfirmasinya ya kak. Terima kasih.`;
+                    window.open(`https://wa.me/${renterPhone}?text=${encodeURIComponent(message)}`, "_blank");
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shrink-0 flex items-center justify-center gap-1.5 shadow-sm transition-all active:scale-95 cursor-pointer">
                   <span className="material-symbols-outlined text-[16px]">call</span>
                   <span>Hubungi Cepat</span>
                 </button>
@@ -513,7 +570,7 @@ export default function Dashboard() {
             <div>
               <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Status & Kesiapan Armada</h2>
               <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                Pantau lokasi, bensin, dan status pemeriksaan 65 unit kendaraan
+                Pantau bensin, odometer, dan status pemeriksaan 65 unit kendaraan
               </p>
             </div>
 
@@ -559,6 +616,7 @@ export default function Dashboard() {
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
               <button
+                onClick={() => setIsAdvancedFilterOpen(true)}
                 className="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
                 type="button">
                 <span className="material-symbols-outlined text-[16px]">tune</span>
@@ -581,7 +639,6 @@ export default function Dashboard() {
                   <th className="px-4 py-3">UNIT & NO. POLISI</th>
                   <th className="px-4 py-3">KATEGORI</th>
                   <th className="px-4 py-3">STATUS</th>
-                  <th className="px-4 py-3">LOKASI & POOL</th>
                   <th className="px-4 py-3">ODOMETER & BBM</th>
                   <th className="px-4 py-3 text-right">AKSI CEPAT</th>
                 </tr>
@@ -614,28 +671,10 @@ export default function Dashboard() {
                         <StatusBadge status={item.status} />
                       </td>
                       <td className="px-4 py-3.5">
-                        <div
-                          className={`flex items-center gap-1.5 font-medium ${
-                            item.status === "Servis" ? "text-rose-600" : "text-slate-800"
-                          }`}>
-                          <span
-                            className={`material-symbols-outlined text-[16px] ${
-                              item.isLocationEnRoute
-                                ? "text-sky-600"
-                                : item.status === "Servis"
-                                  ? "text-rose-500"
-                                  : "text-slate-400"
-                            }`}>
-                            {item.status === "Servis" ? "build" : item.isLocationEnRoute ? "navigation" : "location_on"}
-                          </span>
-                          <span>{item.location}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3.5">
                         <div className="flex flex-col space-y-0.5">
                           <span className="font-semibold text-slate-800">{item.odometer}</span>
                           <span
-                            className={`font-semibold flex items-center gap-1 text-[11px] ${
+                            className={`font-semibold text-[11px] ${
                               item.status === "Servis"
                                 ? "text-rose-600"
                                 : item.status === "Disewa"
@@ -644,26 +683,30 @@ export default function Dashboard() {
                                     ? "text-amber-600"
                                     : "text-emerald-600"
                             }`}>
-                            <span className="material-symbols-outlined text-[13px]">
-                              {item.status === "Servis" ? "engineering" : "local_gas_station"}
-                            </span>
                             {item.fuel}
                           </span>
                         </div>
                       </td>
                       <td className="px-4 py-3.5 text-right">
-                        <button
-                          className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer"
-                          type="button">
-                          <span className="material-symbols-outlined text-[16px]">{item.actionIcon}</span>
+                        <Link
+                          href={item.actionHref}
+                          className={`w-36 h-9 px-3.5 rounded-xl font-bold text-xs inline-flex items-center justify-center transition-all shadow-2xs cursor-pointer ml-auto ${
+                            item.status === "Disewa"
+                              ? "bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200"
+                              : item.status === "Servis"
+                                ? "bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200"
+                                : item.status === "Dipesan"
+                                  ? "bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200"
+                                  : "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/60"
+                          }`}>
                           <span>{item.actionText}</span>
-                        </button>
+                        </Link>
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td className="px-4 py-8 text-center text-slate-500" colSpan={6}>
+                    <td className="px-4 py-8 text-center text-slate-500" colSpan={5}>
                       Tidak ada armada yang sesuai dengan kriteria pencarian/filter.
                     </td>
                   </tr>
@@ -709,6 +752,205 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* ================= MODAL FILTER LANJUTAN (100% CUSTOM DROPDOWN) ================= */}
+      {isAdvancedFilterOpen && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
+                <span className="material-symbols-outlined text-amber-600">tune</span>
+                Filter Lanjutan Armada
+              </h3>
+              <button
+                onClick={() => setIsAdvancedFilterOpen(false)}
+                className="text-slate-400 hover:text-slate-600 cursor-pointer">
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs">
+              {/* Kategori Kendaraan (Custom Dropdown) */}
+              <div className="space-y-1.5 relative" ref={categoryRef}>
+                <label className="font-bold text-slate-700">Kategori Kendaraan</label>
+                <div
+                  onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                  className={`w-full h-11 px-3.5 rounded-xl bg-slate-50 border text-xs text-slate-900 flex items-center justify-between cursor-pointer transition-all ${
+                    isCategoryOpen
+                      ? "border-amber-500 ring-2 ring-amber-500/20 bg-white"
+                      : "border-slate-200 hover:bg-slate-100/60"
+                  }`}>
+                  <span className={!selectedCategory ? "text-slate-800 font-medium" : "text-slate-900 font-bold"}>
+                    {selectedCategory === ""
+                      ? "Semua Kategori"
+                      : selectedCategory === "MPV"
+                        ? "MPV 7-Seater"
+                        : selectedCategory === "SUV"
+                          ? "SUV"
+                          : selectedCategory === "City Car"
+                            ? "City Car"
+                            : "Minibus"}
+                  </span>
+                  <span
+                    className={`material-symbols-outlined text-slate-400 text-[20px] transition-transform ${isCategoryOpen ? "rotate-180" : ""}`}>
+                    expand_more
+                  </span>
+                </div>
+
+                {/* Dropdown Menu List */}
+                {isCategoryOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg z-20 overflow-hidden py-1">
+                    {[
+                      { label: "Semua Kategori", value: "" },
+                      { label: "MPV 7-Seater", value: "MPV" },
+                      { label: "SUV", value: "SUV" },
+                      { label: "City Car", value: "City Car" },
+                      { label: "Minibus", value: "Minibus" },
+                    ].map((opt) => (
+                      <div
+                        key={opt.value}
+                        onClick={() => {
+                          setSelectedCategory(opt.value);
+                          setIsCategoryOpen(false);
+                        }}
+                        className={`px-3.5 py-2.5 cursor-pointer text-xs transition-colors flex items-center justify-between ${
+                          selectedCategory === opt.value
+                            ? "bg-amber-50 text-amber-800 font-bold"
+                            : "text-slate-700 hover:bg-slate-50"
+                        }`}>
+                        <span>{opt.label}</span>
+                        {selectedCategory === opt.value && (
+                          <span className="material-symbols-outlined text-amber-600 text-[16px]">check</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Jenis Transmisi (Custom Dropdown) */}
+              <div className="space-y-1.5 relative" ref={transmissionRef}>
+                <label className="font-bold text-slate-700">Jenis Transmisi</label>
+                <div
+                  onClick={() => setIsTransmissionOpen(!isTransmissionOpen)}
+                  className={`w-full h-11 px-3.5 rounded-xl bg-slate-50 border text-xs text-slate-900 flex items-center justify-between cursor-pointer transition-all ${
+                    isTransmissionOpen
+                      ? "border-amber-500 ring-2 ring-amber-500/20 bg-white"
+                      : "border-slate-200 hover:bg-slate-100/60"
+                  }`}>
+                  <span className={!selectedTransmission ? "text-slate-800 font-medium" : "text-slate-900 font-bold"}>
+                    {selectedTransmission === ""
+                      ? "Semua Transmisi"
+                      : selectedTransmission === "Matic"
+                        ? "Matic / CVT"
+                        : "Manual"}
+                  </span>
+                  <span
+                    className={`material-symbols-outlined text-slate-400 text-[20px] transition-transform ${isTransmissionOpen ? "rotate-180" : ""}`}>
+                    expand_more
+                  </span>
+                </div>
+
+                {/* Dropdown Menu List */}
+                {isTransmissionOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg z-20 overflow-hidden py-1">
+                    {[
+                      { label: "Semua Transmisi", value: "" },
+                      { label: "Matic / CVT", value: "Matic" },
+                      { label: "Manual", value: "Manual" },
+                    ].map((opt) => (
+                      <div
+                        key={opt.value}
+                        onClick={() => {
+                          setSelectedTransmission(opt.value);
+                          setIsTransmissionOpen(false);
+                        }}
+                        className={`px-3.5 py-2.5 cursor-pointer text-xs transition-colors flex items-center justify-between ${
+                          selectedTransmission === opt.value
+                            ? "bg-amber-50 text-amber-800 font-bold"
+                            : "text-slate-700 hover:bg-slate-50"
+                        }`}>
+                        <span>{opt.label}</span>
+                        {selectedTransmission === opt.value && (
+                          <span className="material-symbols-outlined text-amber-600 text-[16px]">check</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+              <button
+                onClick={() => {
+                  setSelectedCategory("");
+                  setSelectedTransmission("");
+                }}
+                className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer"
+                type="button">
+                Reset
+              </button>
+              <button
+                onClick={() => setIsAdvancedFilterOpen(false)}
+                className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition-colors cursor-pointer shadow-sm">
+                Terapkan Filter
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= MODAL LIHAT KONTAK PENYEWA TERLAMBAT ================= */}
+      {isContactModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
+                <span className="material-symbols-outlined text-amber-600">warning</span>
+                Kontak Penyewa Terlambat (2 Unit)
+              </h3>
+              <button
+                onClick={() => setIsContactModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 cursor-pointer">
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {overdueContacts.map((contact, index) => (
+                <div
+                  key={index}
+                  className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-xs text-slate-900">{contact.unitName}</span>
+                      <span className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 font-mono text-[10px] font-bold">
+                        {contact.nopol}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 mt-1">
+                      Penyewa: <strong className="text-slate-900">{contact.renterName}</strong> •{" "}
+                      <span className="font-mono">{contact.renterPhone}</span>
+                    </p>
+                    <p className="text-[11px] text-rose-600 font-semibold mt-0.5">
+                      Jadwal kembali: {contact.returnTime} ({contact.overdueDuration})
+                    </p>
+                  </div>
+                  <a
+                    href={`https://wa.me/${contact.renterPhone}?text=${encodeURIComponent(`Halo Kak ${contact.renterName}, kami dari Caruhun Rental mengingatkan bahwa unit ${contact.unitName} (${contact.nopol}) sudah melewati jadwal pengembalian. Mohon konfirmasinya ya kak. Terima kasih.`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm shrink-0">
+                    <span className="material-symbols-outlined text-[16px]">chat</span>
+                    <span>WhatsApp</span>
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -776,7 +1018,7 @@ function FilterTabButton({ label, active, onClick }: FilterTabButtonProps) {
   return (
     <button
       className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-        active ? "bg-white text-slate-900 shadow-2xs" : "text-slate-500 hover:text-slate-900"
+        active ? "bg-amber-600 text-white shadow-xs" : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/50"
       }`}
       type="button"
       onClick={onClick}>
@@ -837,15 +1079,18 @@ function VehicleConditionAlert({ unitName, nopol, issue, time, badgeText = "Pent
           <p className="font-extrabold text-xs text-slate-900 tracking-wide">{issue}</p>
           <span className="text-[11px] text-slate-500 block mt-0.5">{time}</span>
         </div>
-        <button className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[11px] transition-colors cursor-pointer">
+        <Link
+          href="/admin/claims"
+          className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[11px] transition-colors cursor-pointer">
           Tindak Lanjuti
-        </button>
+        </Link>
       </div>
     </div>
   );
 }
 
 interface ActiveRentalCardProps {
+  id: string;
   unitName: string;
   nopol: string;
   renterName: string;
@@ -861,6 +1106,7 @@ interface ActiveRentalCardProps {
 }
 
 function ActiveRentalCard({
+  id,
   unitName,
   nopol,
   renterName,
@@ -882,18 +1128,16 @@ function ActiveRentalCard({
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3 mb-3">
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-amber-600 text-[18px]">directions_car</span>
-            <h3 className="font-bold text-sm text-slate-900">
-              {unitName} <span className="font-mono text-slate-400 font-normal text-xs">({nopol})</span>
-            </h3>
+            <h3 className="font-bold text-sm text-slate-900 truncate max-w-[150px]">{unitName}</h3>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="px-2.5 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200 text-[10px] font-bold">
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span className="px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200 text-[10px] font-bold">
               Disewa
             </span>
             {isOverdue && (
-              <span className="px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold flex items-center gap-1">
+              <span className="px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold flex items-center gap-0.5">
                 <span className="material-symbols-outlined text-[12px]">warning</span>
-                TERLAMBAT
+                TELAT
               </span>
             )}
           </div>
@@ -904,7 +1148,7 @@ function ActiveRentalCard({
           <span className="text-xs text-slate-500 ml-1.5 font-mono">({renterPhone})</span>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-slate-500 mb-3 bg-slate-50 p-2 rounded-xl">
+        <div className="flex items-center justify-between gap-1 text-[11px] text-slate-500 mb-3 bg-slate-50 p-2 rounded-xl">
           <span>
             Berangkat: <strong className="text-slate-800 font-medium">{departureTime}</strong>
           </span>
@@ -935,17 +1179,22 @@ function ActiveRentalCard({
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-2 pt-1">
-        <button
-          type="button"
-          className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer">
+      {/* Tombol Detail dan Pengingat */}
+      <div className="flex items-center gap-2 pt-1">
+        <Link
+          href={`/admin/rentals/${id}`}
+          className="flex-1 h-10 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs text-center transition-colors flex items-center justify-center">
           Detail
-        </button>
+        </Link>
         <button
           type="button"
-          className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all active:scale-95 cursor-pointer">
-          <span className="material-symbols-outlined text-[14px]">send</span>
-          <span>Kirim Pengingat</span>
+          onClick={() => {
+            const message = `Halo Kak ${renterName}, kami dari Caruhun Rental mengingatkan bahwa unit ${unitName} (${nopol}) sudah melewati jadwal pengembalian (${returnTime}). Mohon konfirmasinya ya kak. Terima kasih.`;
+            window.open(`https://wa.me/${renterPhone}?text=${encodeURIComponent(message)}`, "_blank");
+          }}
+          className="flex-1 h-10 px-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all active:scale-95 cursor-pointer whitespace-nowrap">
+          <span className="material-symbols-outlined text-[15px] leading-none">send</span>
+          <span>Pengingat</span>
         </button>
       </div>
     </div>

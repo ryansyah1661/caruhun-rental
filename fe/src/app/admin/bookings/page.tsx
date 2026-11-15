@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import Link from "next/link";
 
 // Types
 type UnitStatus = "Tersedia" | "Dipesan" | "Disewa" | "Servis";
@@ -27,6 +28,7 @@ interface CalendarBooking {
 
 interface RentalTableItem {
   id: string;
+  bookingCode: string;
   renterName: string;
   renterPhone: string;
   unitName: string;
@@ -118,20 +120,22 @@ const MONTH_BOOKINGS: CalendarBooking[] = [
 
 const DAFTAR_RENTAL_TABLE: RentalTableItem[] = [
   {
-    id: "1",
+    id: "5",
+    bookingCode: "#CRH-2410-070",
     renterName: "Asha",
     renterPhone: "08123456789",
     unitName: "Toyota Avanza",
     nopol: "B 1956 SBK",
     period: "18 Okt 2026 - 19 Okt 2026",
     packageType: "Paket 1 Hari (24 Jam)",
-    status: "Disewa",
+    status: "Selesai",
   },
 ];
 
 export default function BookingCalendarPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [activeBooking, setActiveBooking] = useState<CalendarBooking | null>(MONTH_BOOKINGS[1]);
+  const [tableFilterStatus, setTableFilterStatus] = useState<string>("Semua Status");
 
   const calendarDays = useMemo(() => {
     const days = [];
@@ -148,6 +152,27 @@ export default function BookingCalendarPage() {
     return days;
   }, []);
 
+  // Gabungkan data untuk tabel rekapitulasi di bawah
+  const combinedTableData: RentalTableItem[] = [
+    ...MONTH_BOOKINGS.map((b) => ({
+      id: b.id,
+      bookingCode: b.bookingCode,
+      renterName: b.renterName,
+      renterPhone: b.renterPhone,
+      unitName: b.unitName,
+      nopol: b.shortNopol,
+      period: `${b.startDateFull} s.d ${b.endDateFull}`,
+      packageType: b.duration,
+      status: b.status as UnitStatus,
+    })),
+    ...DAFTAR_RENTAL_TABLE,
+  ];
+
+  const filteredTableData = combinedTableData.filter((item) => {
+    if (tableFilterStatus === "Semua Status") return true;
+    return item.status === tableFilterStatus;
+  });
+
   return (
     <div className="w-full font-body-md text-slate-800 antialiased bg-slate-50/50 min-h-screen p-6 lg:p-8 space-y-6">
       {/* ================= HEADER BAR ================= */}
@@ -155,13 +180,13 @@ export default function BookingCalendarPage() {
         <div>
           <div className="flex items-center gap-2 text-xs text-slate-400 mb-1 font-medium">
             <span>Dashboard</span> &rsaquo; <span>Operasional Armada</span> &rsaquo;{" "}
-            <span className="text-slate-800 font-bold">Kalender Bulanan</span>
+            <span className="text-slate-800 font-bold">Kalender & Daftar Booking</span>
           </div>
           <h1 className="text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Kalender Reservasi Bulanan
+            Manajemen Reservasi & Jadwal Booking
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Tampilan kalender interaktif bulan Oktober 2026. Klik pada inisial/plat mobil untuk melihat detail sewa.
+            Pantau ketersediaan unit melalui kalender interaktif atau kelola daftar transaksi sewa dalam format tabel.
           </p>
         </div>
 
@@ -172,12 +197,12 @@ export default function BookingCalendarPage() {
             <span className="material-symbols-outlined text-[18px] text-slate-500">calendar_today</span>
             <span>Oktober 2026</span>
           </button>
-          <button
-            type="button"
+          <Link
+            href="/admin/bookings/create"
             className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer">
             <span className="material-symbols-outlined text-[18px]">add_circle</span>
             <span>Buat Booking Baru</span>
-          </button>
+          </Link>
         </div>
       </div>
 
@@ -376,7 +401,7 @@ export default function BookingCalendarPage() {
               <div className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200/80 bg-white shadow-2xs">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 font-black flex items-center justify-center text-xs">
-                    HW
+                    {activeBooking.renterName.substring(0, 2).toUpperCase()}
                   </div>
                   <div>
                     <h5 className="font-bold text-xs text-slate-900">{activeBooking.renterName}</h5>
@@ -417,12 +442,12 @@ export default function BookingCalendarPage() {
 
             {/* Action Buttons */}
             <div className="space-y-2.5 pt-2">
-              <button
-                type="button"
+              <Link
+                href="/admin/pemeriksaan-kendaraan/keluar"
                 className="w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer">
                 <span className="material-symbols-outlined text-[18px]">key</span>
                 <span>Mulai Serah Terima Armada</span>
-              </button>
+              </Link>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
@@ -446,14 +471,19 @@ export default function BookingCalendarPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
           <div>
             <h2 className="text-lg font-bold text-slate-900">Daftar Rental Transaksi</h2>
-            <p className="text-xs text-slate-500 mt-0.5">Rekapitulasi riwayat penyewaan aktif dan selesai</p>
+            <p className="text-xs text-slate-500 mt-0.5">Rekapitulasi riwayat penyewaan aktif, pesanan, dan selesai</p>
           </div>
           <div className="flex items-center gap-2.5">
             <span className="text-xs font-bold text-slate-400">FILTER STATUS:</span>
-            <select className="h-10 rounded-xl bg-slate-50 border border-slate-200 px-3 text-xs font-bold text-slate-800 focus:outline-none focus:border-amber-500">
-              <option>Semua Status</option>
-              <option>Disewa</option>
-              <option>Selesai</option>
+            <select
+              value={tableFilterStatus}
+              onChange={(e) => setTableFilterStatus(e.target.value)}
+              className="h-10 rounded-xl bg-slate-50 border border-slate-200 px-3 text-xs font-bold text-slate-800 focus:outline-none focus:border-amber-500 cursor-pointer">
+              <option value="Semua Status">Semua Status</option>
+              <option value="Disewa">Disewa</option>
+              <option value="Dipesan">Dipesan</option>
+              <option value="Servis">Servis</option>
+              <option value="Selesai">Selesai</option>
             </select>
           </div>
         </div>
@@ -462,39 +492,58 @@ export default function BookingCalendarPage() {
           <table className="w-full text-left border-collapse text-xs">
             <thead>
               <tr className="bg-slate-50 text-slate-600 font-bold uppercase h-11 border-b border-slate-200">
+                <th className="px-4 py-3">Kode Booking</th>
                 <th className="px-4 py-3">Pelanggan</th>
                 <th className="px-4 py-3">Kendaraan</th>
                 <th className="px-4 py-3">Periode</th>
-                <th className="px-4 py-3">Paket</th>
+                <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3 text-right">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
-              {DAFTAR_RENTAL_TABLE.map((item) => (
-                <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
-                  <td className="px-4 py-3.5">
-                    <div className="font-bold text-slate-900 text-sm">{item.renterName}</div>
-                    <div className="text-slate-500 font-mono text-[11px] mt-0.5">{item.renterPhone}</div>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <div className="font-bold text-slate-900">{item.unitName}</div>
-                    <div className="text-slate-500 font-mono text-[11px] mt-0.5">{item.nopol}</div>
-                  </td>
-                  <td className="px-4 py-3.5 font-medium text-slate-800">{item.period}</td>
-                  <td className="px-4 py-3.5">
-                    <span className="px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 font-semibold text-[11px]">
-                      {item.packageType}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3.5 text-right">
-                    <button
-                      type="button"
-                      className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer">
-                      Detail
-                    </button>
+              {filteredTableData.length > 0 ? (
+                filteredTableData.map((item) => (
+                  <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="px-4 py-3.5 font-mono font-bold text-slate-900">{item.bookingCode}</td>
+                    <td className="px-4 py-3.5">
+                      <div className="font-bold text-slate-900 text-sm">{item.renterName}</div>
+                      <div className="text-slate-500 font-mono text-[11px] mt-0.5">{item.renterPhone}</div>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <div className="font-bold text-slate-900">{item.unitName}</div>
+                      <div className="text-slate-500 font-mono text-[11px] mt-0.5">{item.nopol}</div>
+                    </td>
+                    <td className="px-4 py-3.5 font-medium text-slate-800">{item.period}</td>
+                    <td className="px-4 py-3.5">
+                      <span
+                        className={`px-2.5 py-1 rounded-full text-[11px] font-bold border ${
+                          item.status === "Disewa"
+                            ? "bg-sky-50 text-sky-700 border-sky-200"
+                            : item.status === "Dipesan"
+                              ? "bg-amber-50 text-amber-700 border-amber-200"
+                              : item.status === "Servis"
+                                ? "bg-rose-50 text-rose-700 border-rose-200"
+                                : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                        }`}>
+                        {item.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3.5 text-right">
+                      <button
+                        type="button"
+                        className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer">
+                        Detail
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} className="px-4 py-8 text-center text-slate-400">
+                    Tidak ada data transaksi yang sesuai dengan filter.
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
