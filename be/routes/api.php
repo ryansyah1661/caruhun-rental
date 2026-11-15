@@ -4,9 +4,15 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PublicContentController;
 use App\Http\Controllers\Api\AdminContentController;
 use Illuminate\Support\Facades\Route;
+use App\Models\Booking;
 
 Route::get('/ping', fn() => ['ok' => true]);
 Route::post('/login', [AuthController::class, 'login']);
+
+// Endpoint Booking
+Route::get('/bookings', function () {
+    return response()->json(Booking::with('unit', 'customer')->get());
+});
 
 // Endpoint Publik untuk Next.js Frontend (Beranda, Katalog, Tarif, dll)
 Route::prefix('public')->group(function () {

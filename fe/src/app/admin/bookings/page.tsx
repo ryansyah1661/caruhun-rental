@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 // Types
 type UnitStatus = "Tersedia" | "Dipesan" | "Disewa" | "Servis";
@@ -18,6 +19,8 @@ interface CalendarBooking {
   shortNopol: string;
   unitSpecs: string;
   date: number;
+  month: number; // 0 = Januari, ..., 9 = Oktober, dst
+  year: number;
   startDateFull: string;
   endDateFull: string;
   duration: string;
@@ -38,7 +41,23 @@ interface RentalTableItem {
   status: UnitStatus | "Selesai";
 }
 
-// Dummy Data Booking Berdasarkan Tanggal di Bulan Oktober 2026
+// Daftar Bulan
+const MONTH_NAMES = [
+  "Januari",
+  "Februari",
+  "Maret",
+  "April",
+  "Mei",
+  "Juni",
+  "Juli",
+  "Agustus",
+  "September",
+  "Oktober",
+  "November",
+  "Desember",
+];
+
+// Dummy Data Booking Berdasarkan Tanggal
 const MONTH_BOOKINGS: CalendarBooking[] = [
   {
     id: "1",
@@ -52,6 +71,8 @@ const MONTH_BOOKINGS: CalendarBooking[] = [
     shortNopol: "D 2091 AGH",
     unitSpecs: "1.2 CVT • 5 Kursi",
     date: 10,
+    month: 9, // Oktober
+    year: 2026,
     startDateFull: "10 Okt 2026 • 10:00 WIB",
     endDateFull: "12 Okt 2026 • 10:00 WIB",
     duration: "2 Hari",
@@ -71,6 +92,8 @@ const MONTH_BOOKINGS: CalendarBooking[] = [
     shortNopol: "B 1482 KFD",
     unitSpecs: "1.5 G MT • 7 Kursi",
     date: 24,
+    month: 9, // Oktober
+    year: 2026,
     startDateFull: "24 Okt 2026 • 09:00 WIB",
     endDateFull: "26 Okt 2026 • 09:00 WIB",
     duration: "2 Hari Penuh (48 Jam)",
@@ -90,6 +113,8 @@ const MONTH_BOOKINGS: CalendarBooking[] = [
     shortNopol: "B 2884 SSR",
     unitSpecs: "2.0 V AT • 7 Kursi",
     date: 24,
+    month: 9, // Oktober
+    year: 2026,
     startDateFull: "24 Okt 2026 • 09:00 WIB",
     endDateFull: "28 Okt 2026 • 09:00 WIB",
     duration: "4 Hari Penuh",
@@ -109,6 +134,8 @@ const MONTH_BOOKINGS: CalendarBooking[] = [
     shortNopol: "B 1019 TRB",
     unitSpecs: "2.5 Diesel • 16 Kursi",
     date: 25,
+    month: 9, // Oktober
+    year: 2026,
     startDateFull: "25 Okt 2026",
     endDateFull: "27 Okt 2026",
     duration: "Bengkel Resmi",
@@ -116,11 +143,53 @@ const MONTH_BOOKINGS: CalendarBooking[] = [
     poolLocation: "Auto2000 Cilandak",
     adminName: "Mekanik Pool",
   },
+  {
+    id: "5",
+    bookingCode: "#CRH-2409-012",
+    renterName: "Bambang Pamungkas",
+    renterPhone: "0811-2233-4455",
+    isKtpVerified: true,
+    isSimActive: true,
+    unitName: "Toyota Fortuner",
+    unitInitial: "FTN",
+    shortNopol: "B 1234 ABC",
+    unitSpecs: "2.4 VRZ • 7 Kursi",
+    date: 15,
+    month: 8, // September
+    year: 2026,
+    startDateFull: "15 Sep 2026 • 08:00 WIB",
+    endDateFull: "17 Sep 2026 • 08:00 WIB",
+    duration: "2 Hari",
+    status: "Selesai" as any,
+    poolLocation: "Pool Utama",
+    adminName: "Naila",
+  },
+  {
+    id: "6",
+    bookingCode: "#CRH-2411-002",
+    renterName: "Siti Rahma",
+    renterPhone: "0856-7890-1234",
+    isKtpVerified: true,
+    isSimActive: true,
+    unitName: "Honda Brio RS",
+    unitInitial: "BRO",
+    shortNopol: "D 1122 XYZ",
+    unitSpecs: "1.2 CVT • 5 Kursi",
+    date: 5,
+    month: 10, // November
+    year: 2026,
+    startDateFull: "05 Nov 2026 • 09:00 WIB",
+    endDateFull: "06 Nov 2026 • 09:00 WIB",
+    duration: "1 Hari",
+    status: "Dipesan",
+    poolLocation: "Pool Utama",
+    adminName: "Budi S.",
+  },
 ];
 
 const DAFTAR_RENTAL_TABLE: RentalTableItem[] = [
   {
-    id: "5",
+    id: "7",
     bookingCode: "#CRH-2410-070",
     renterName: "Asha",
     renterPhone: "08123456789",
@@ -133,45 +202,118 @@ const DAFTAR_RENTAL_TABLE: RentalTableItem[] = [
 ];
 
 export default function BookingCalendarPage() {
+  const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [activeBooking, setActiveBooking] = useState<CalendarBooking | null>(MONTH_BOOKINGS[1]);
   const [tableFilterStatus, setTableFilterStatus] = useState<string>("Semua Status");
 
+  // State Bulan & Tahun Aktif
+  const [currentMonth, setCurrentMonth] = useState<number>(9);
+  const [currentYear, setCurrentYear] = useState<number>(2026);
+
+  // State untuk Dropdown Pilihan Bulan di Header
+  const [isMonthDropdownOpen, setIsMonthDropdownOpen] = useState<boolean>(false);
+  const monthDropdownRef = useRef<HTMLDivElement>(null);
+
+  // State Booking Aktif di Drawer Kanan
+  const [activeBooking, setActiveBooking] = useState<CalendarBooking | null>(MONTH_BOOKINGS[1]);
+
+  // Tutup dropdown saat klik di luar
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (monthDropdownRef.current && !monthDropdownRef.current.contains(event.target as Node)) {
+        setIsMonthDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Generate Hari dalam Kalender berdasarkan Bulan & Tahun yang dipilih
   const calendarDays = useMemo(() => {
     const days = [];
-    const emptySlotsAtStart = 3;
+    const totalDaysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const firstDayOfWeek = new Date(currentYear, currentMonth, 1).getDay();
+    const emptySlotsAtStart = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
 
     for (let i = 0; i < emptySlotsAtStart; i++) {
       days.push({ dayNumber: null, isCurrentMonth: false });
     }
 
-    for (let d = 1; d <= 31; d++) {
+    for (let d = 1; d <= totalDaysInMonth; d++) {
       days.push({ dayNumber: d, isCurrentMonth: true });
     }
 
     return days;
-  }, []);
+  }, [currentMonth, currentYear]);
+
+  // Filter booking sesuai bulan & tahun yang aktif di kalender
+  const currentMonthBookings = useMemo(() => {
+    return MONTH_BOOKINGS.filter((b) => b.month === currentMonth && b.year === currentYear);
+  }, [currentMonth, currentYear]);
 
   // Gabungkan data untuk tabel rekapitulasi di bawah
-  const combinedTableData: RentalTableItem[] = [
-    ...MONTH_BOOKINGS.map((b) => ({
-      id: b.id,
-      bookingCode: b.bookingCode,
-      renterName: b.renterName,
-      renterPhone: b.renterPhone,
-      unitName: b.unitName,
-      nopol: b.shortNopol,
-      period: `${b.startDateFull} s.d ${b.endDateFull}`,
-      packageType: b.duration,
-      status: b.status as UnitStatus,
-    })),
-    ...DAFTAR_RENTAL_TABLE,
+  const combinedTableData: CalendarBooking[] = [
+    ...MONTH_BOOKINGS,
+    // Menyesuaikan item tambahan tabel agar kompatibel dengan tipe CalendarBooking jika diperlukan detailnya
+    {
+      id: "7",
+      bookingCode: "#CRH-2410-070",
+      renterName: "Asha",
+      renterPhone: "08123456789",
+      isKtpVerified: true,
+      isSimActive: true,
+      unitName: "Toyota Avanza",
+      unitInitial: "AVZ",
+      shortNopol: "B 1956 SBK",
+      unitSpecs: "1.5 G • 7 Kursi",
+      date: 18,
+      month: 9,
+      year: 2026,
+      startDateFull: "18 Okt 2026 • 09:00 WIB",
+      endDateFull: "19 Okt 2026 • 09:00 WIB",
+      duration: "1 Hari (24 Jam)",
+      status: "Dipesan", // atau Selesai
+      poolLocation: "Pool Utama",
+      adminName: "Naila",
+    },
   ];
 
   const filteredTableData = combinedTableData.filter((item) => {
     if (tableFilterStatus === "Semua Status") return true;
+    if (tableFilterStatus === "Selesai") return item.status === ("Selesai" as any);
     return item.status === tableFilterStatus;
   });
+
+  // Handler navigasi tombol bawah
+  const handlePrevMonth = () => {
+    if (currentMonth === 0) {
+      setCurrentMonth(11);
+      setCurrentYear(currentYear - 1);
+    } else {
+      setCurrentMonth(currentMonth - 1);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (currentMonth === 11) {
+      setCurrentMonth(0);
+      setCurrentYear(currentYear + 1);
+    } else {
+      setCurrentMonth(currentMonth + 1);
+    }
+  };
+
+  const handleToday = () => {
+    setCurrentMonth(9); // Oktober
+    setCurrentYear(2026);
+  };
+
+  // Handler klik tombol Detail pada tabel: Memilih booking tersebut agar drawer detail di atas langsung terbuka
+  const handleViewDetail = (booking: CalendarBooking) => {
+    setActiveBooking(booking);
+    // Auto scroll ke atas agar drawer di samping terlihat
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   return (
     <div className="w-full font-body-md text-slate-800 antialiased bg-slate-50/50 min-h-screen p-6 lg:p-8 space-y-6">
@@ -191,12 +333,48 @@ export default function BookingCalendarPage() {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap shrink-0">
-          <button
-            type="button"
-            className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer">
-            <span className="material-symbols-outlined text-[18px] text-slate-500">calendar_today</span>
-            <span>Oktober 2026</span>
-          </button>
+          {/* TOMBOL DROPDOWN PILIH BULAN DI HEADER */}
+          <div className="relative" ref={monthDropdownRef}>
+            <button
+              onClick={() => setIsMonthDropdownOpen(!isMonthDropdownOpen)}
+              type="button"
+              className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer border border-slate-200">
+              <span className="material-symbols-outlined text-[18px] text-slate-500">calendar_today</span>
+              <span>
+                {MONTH_NAMES[currentMonth]} {currentYear}
+              </span>
+              <span className="material-symbols-outlined text-[16px] text-slate-400">expand_more</span>
+            </button>
+
+            {/* Menu Dropdown Pilihan Bulan */}
+            {isMonthDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                <div className="px-3 py-1.5 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100">
+                  Pilih Bulan 2026
+                </div>
+                <div className="max-h-60 overflow-y-auto py-1">
+                  {MONTH_NAMES.map((m, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        setCurrentMonth(idx);
+                        setCurrentYear(2026);
+                        setIsMonthDropdownOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-2 text-xs font-bold transition-colors flex items-center justify-between ${
+                        currentMonth === idx ? "bg-amber-50 text-amber-700" : "text-slate-700 hover:bg-slate-50"
+                      }`}>
+                      <span>{m} 2026</span>
+                      {currentMonth === idx && (
+                        <span className="material-symbols-outlined text-[16px] text-amber-600">check</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
           <Link
             href="/admin/bookings/create"
             className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer">
@@ -251,21 +429,29 @@ export default function BookingCalendarPage() {
               </div>
             </div>
 
-            {/* Navigasi Bulan */}
+            {/* Navigasi Bulan Dinamis */}
             <div className="flex items-center justify-between bg-slate-50 px-4 py-3 rounded-xl border border-slate-200/60">
               <div className="flex items-center gap-2 text-xs font-extrabold text-slate-900">
                 <span className="material-symbols-outlined text-[18px] text-amber-600">event_note</span>
-                <span>Oktober 2026 — Jadwal Operasional Armada</span>
+                <span>
+                  {MONTH_NAMES[currentMonth]} {currentYear} — Jadwal Operasional Armada
+                </span>
               </div>
               <div className="flex items-center gap-1">
-                <button className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-100 transition-colors cursor-pointer shadow-2xs">
-                  &lsaquo; Sept
+                <button
+                  onClick={handlePrevMonth}
+                  className="px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-100 transition-colors cursor-pointer shadow-2xs">
+                  &lsaquo; {MONTH_NAMES[currentMonth === 0 ? 11 : currentMonth - 1].slice(0, 3)}
                 </button>
-                <button className="px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-100 transition-colors cursor-pointer shadow-2xs">
+                <button
+                  onClick={handleToday}
+                  className="px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-100 transition-colors cursor-pointer shadow-2xs">
                   Hari Ini
                 </button>
-                <button className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-100 transition-colors cursor-pointer shadow-2xs">
-                  Nov &rsaquo;
+                <button
+                  onClick={handleNextMonth}
+                  className="px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-100 transition-colors cursor-pointer shadow-2xs">
+                  {MONTH_NAMES[currentMonth === 11 ? 0 : currentMonth + 1].slice(0, 3)} &rsaquo;
                 </button>
               </div>
             </div>
@@ -290,8 +476,8 @@ export default function BookingCalendarPage() {
                     return <div key={index} className="bg-slate-50/40 min-h-[145px] p-2"></div>;
                   }
 
-                  const dayBookings = MONTH_BOOKINGS.filter((b) => b.date === slot.dayNumber);
-                  const isToday = slot.dayNumber === 24;
+                  const dayBookings = currentMonthBookings.filter((b) => b.date === slot.dayNumber);
+                  const isToday = slot.dayNumber === 24 && currentMonth === 9 && currentYear === 2026;
                   const isSelected = activeBooking && dayBookings.some((b) => b.id === activeBooking.id);
 
                   return (
@@ -366,7 +552,7 @@ export default function BookingCalendarPage() {
               <div>
                 <span className="text-[11px] font-extrabold text-amber-700 uppercase tracking-wide flex items-center gap-1">
                   <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                  {activeBooking.status} • Detail Reservasi
+                  Detail Reservasi ({activeBooking.status})
                 </span>
                 <h3 className="font-mono text-xl font-black text-slate-900 mt-0.5">{activeBooking.bookingCode}</h3>
               </div>
@@ -511,9 +697,11 @@ export default function BookingCalendarPage() {
                     </td>
                     <td className="px-4 py-3.5">
                       <div className="font-bold text-slate-900">{item.unitName}</div>
-                      <div className="text-slate-500 font-mono text-[11px] mt-0.5">{item.nopol}</div>
+                      <div className="text-slate-500 font-mono text-[11px] mt-0.5">{item.shortNopol}</div>
                     </td>
-                    <td className="px-4 py-3.5 font-medium text-slate-800">{item.period}</td>
+                    <td className="px-4 py-3.5 font-medium text-slate-800">
+                      {item.startDateFull} s.d {item.endDateFull}
+                    </td>
                     <td className="px-4 py-3.5">
                       <span
                         className={`px-2.5 py-1 rounded-full text-[11px] font-bold border ${
@@ -529,8 +717,10 @@ export default function BookingCalendarPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3.5 text-right">
+                      {/* Tombol Detail terhubung langsung untuk menampilkan data pada panel flyout kanan */}
                       <button
                         type="button"
+                        onClick={() => handleViewDetail(item)}
                         className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer">
                         Detail
                       </button>
