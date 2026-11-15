@@ -7,6 +7,11 @@ use App\Http\Controllers\Api\AdminDashboardController;
 use App\Http\Controllers\Api\AdminBookingController;
 use App\Http\Controllers\Api\AdminDepartureController;
 use App\Http\Controllers\Api\AdminArrivalController;
+use App\Http\Controllers\Api\AdminRentalHistoryController;
+use App\Http\Controllers\Api\AdminVehicleController;
+use App\Http\Controllers\Api\AdminCustomerController;
+use App\Http\Controllers\Api\AdminInspectionController;
+use App\Http\Controllers\Api\AdminClaimController;
 use Illuminate\Support\Facades\Route;
 use App\Models\Booking;
 
@@ -40,6 +45,21 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Admin Arrival Management
     Route::get('/admin/arrivals', [AdminArrivalController::class, 'index']);
+
+    // Admin Rental History Management
+    Route::get('/admin/rentals', [AdminRentalHistoryController::class, 'index']);
+
+    // Admin Vehicle Management
+    Route::get('/admin/vehicles', [AdminVehicleController::class, 'index']);
+
+    // Admin Customer Management
+    Route::get('/admin/customers', [AdminCustomerController::class, 'index']);
+
+    // Admin Inspection Management
+    Route::get('/admin/inspections', [AdminInspectionController::class, 'index']);
+
+    // Admin Claim Management
+    Route::get('/admin/claims', [AdminClaimController::class, 'index']);
 
     Route::post('/admin/pages/{slug}/{section}', [AdminContentController::class, 'upsertSection']);
 });

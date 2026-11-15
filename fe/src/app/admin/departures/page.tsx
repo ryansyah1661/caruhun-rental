@@ -100,7 +100,7 @@ export default function DeparturePage() {
         {/* Filter & Search Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
           <div className="flex items-center gap-1.5 overflow-x-auto text-xs">
-            {["Semua", "Siap Berangkat", "Dalam Perjalanan", "Selesai"].map((status) => (
+            {["Semua", "Siap Berangkat", "Dalam Perjalanan", "Tertunda", "Selesai"].map((status) => (
               <button
                 key={status}
                 onClick={() => setFilterStatus(status)}
@@ -127,18 +127,18 @@ export default function DeparturePage() {
 
         {/* Tabel Data Keberangkatan */}
         <div className="overflow-x-auto rounded-xl border border-slate-200">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="w-full text-left border-collapse text-xs divide-y divide-slate-200">
             <thead>
-              <tr className="bg-slate-50 text-slate-600 font-bold uppercase h-11 border-b border-slate-200">
-                <th className="px-4 py-3">ID / Booking</th>
-                <th className="px-4 py-3">Kendaraan</th>
-                <th className="px-4 py-3">Penyewa & Driver</th>
-                <th className="px-4 py-3">Tujuan & Waktu</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3 text-right">Aksi Operasional</th>
+              <tr className="bg-slate-50 text-slate-600 font-bold uppercase h-11 border-b border-slate-200 divide-x divide-slate-200">
+                <th className="px-4 py-3 text-center">Kode Booking</th>
+                <th className="px-4 py-3 text-center">Kendaraan</th>
+                <th className="px-4 py-3 text-center">Penyewa & Driver</th>
+                <th className="px-4 py-3 text-center">Tujuan & Waktu</th>
+                <th className="px-4 py-3 text-center">Status</th>
+                <th className="px-4 py-3 text-center">Aksi Operasional</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-700">
+            <tbody className="divide-y divide-slate-200 text-slate-700">
               {filteredData.length > 0 ? (
                 filteredData.map((item) => {
                   let statusBadge = "bg-sky-50 text-sky-700 border-sky-200";
@@ -149,7 +149,7 @@ export default function DeparturePage() {
                   const cleanBookingId = item.bookingCode.replace("#", "");
 
                   return (
-                    <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
+                    <tr key={item.id} className="hover:bg-slate-50/80 transition-colors divide-x divide-slate-200">
                       <td className="px-4 py-3.5">
                         <span className="font-mono font-bold text-slate-900">{item.bookingCode}</span>
                       </td>
@@ -165,24 +165,25 @@ export default function DeparturePage() {
                         <div className="font-semibold text-slate-900">{item.destination}</div>
                         <div className="text-slate-500 text-[11px] mt-0.5">{item.departureTime}</div>
                       </td>
-                      <td className="px-4 py-3.5">
-                        <span
-                          className={`px-2.5 py-1 rounded-lg border font-bold text-[11px] inline-flex items-center gap-1.5 ${statusBadge}`}>
-                          <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
-                          {item.status}
-                        </span>
+                      <td className="px-4 py-3.5 text-center">
+                        <div className="flex justify-center">
+                          <span
+                            className={`w-36 px-2.5 py-1 rounded-full border font-bold text-[11px] inline-flex items-center justify-center gap-1.5 ${statusBadge}`}>
+                            <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
+                            {item.status}
+                          </span>
+                        </div>
                       </td>
-                      <td className="px-4 py-3.5 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
+                      <td className="px-4 py-3.5 text-center">
+                        <div className="flex items-center justify-center gap-2">
                           <Link
                             href="/admin/pemeriksaan-kendaraan/keluar"
-                            className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer">
+                            className="w-28 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer inline-flex items-center justify-center border border-slate-200/60">
                             Ceklis Fisik
                           </Link>
-
                           <Link
                             href={`/admin/departures/${cleanBookingId}`}
-                            className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition-colors cursor-pointer inline-flex items-center shadow-xs">
+                            className="w-24 h-9 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition-colors cursor-pointer inline-flex items-center justify-center shadow-sm">
                             Proses
                           </Link>
                         </div>

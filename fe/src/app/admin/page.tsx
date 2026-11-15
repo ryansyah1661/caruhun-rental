@@ -106,7 +106,7 @@ export default function Dashboard() {
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 mt-1.5 flex items-center gap-2">
               <span className="material-symbols-outlined text-[16px] text-amber-600">schedule</span>
-              <span>Ringkasan Operasional Pool ({currentDateFormatted}) • Depok & Jakarta Selatan</span>
+              <span>Ringkasan Operasional Rental ({currentDateFormatted})</span>
             </p>
           </div>
 
@@ -120,14 +120,14 @@ export default function Dashboard() {
             </Link>
 
             <Link
-              href="/admin/pemeriksaan-kendaraan/keluar"
+              href="/admin/inspections/keluar"
               className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer">
               <span className="material-symbols-outlined text-[18px] text-slate-500">logout</span>
               <span>Pemeriksaan Keluar</span>
             </Link>
 
             <Link
-              href="/admin/pemeriksaan-kendaraan/masuk"
+              href="/admin/inspections/masuk"
               className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer">
               <span className="material-symbols-outlined text-[18px] text-slate-500">login</span>
               <span>Catat Pengembalian</span>
@@ -331,7 +331,7 @@ export default function Dashboard() {
                       </div>
                     </div>
                     <Link
-                      href="/admin/pemeriksaan-kendaraan/keluar"
+                      href="/admin/inspections/keluar"
                       className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shrink-0 flex items-center justify-center gap-1.5 shadow-sm transition-all active:scale-95 cursor-pointer">
                       <span className="material-symbols-outlined text-[16px]">key</span>
                       <span>Mulai Serah Terima</span>
@@ -407,7 +407,7 @@ export default function Dashboard() {
                       </div>
                     </div>
                     <Link
-                      href="/admin/pemeriksaan-kendaraan/masuk"
+                      href="/admin/inspections/masuk"
                       className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs shrink-0 flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
                       <span className="material-symbols-outlined text-[16px]">fact_check</span>
                       <span>Pemeriksaan Masuk</span>
@@ -429,7 +429,7 @@ export default function Dashboard() {
             <div>
               <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Status & Kesiapan Armada</h2>
               <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                Pantau bensin, odometer, dan status operasional armada ({fleetData.length} unit terdaftar di PostgreSQL)
+                Pantau bensin, odometer, dan status operasional armada ({fleetData.length} unit terdaftar).
               </p>
             </div>
 
@@ -493,10 +493,10 @@ export default function Dashboard() {
             <table className="w-full text-left border-collapse divide-y divide-slate-200">
               <thead>
                 <tr className="bg-slate-50 text-slate-600 font-bold text-xs border-b border-slate-200 h-11 divide-x divide-slate-200">
-                  <th className="px-4 py-3">UNIT & NO. POLISI</th>
-                  <th className="px-4 py-3">KATEGORI</th>
+                  <th className="px-4 py-3 text-center">UNIT & NO. POLISI</th>
+                  <th className="px-4 py-3 text-center">KATEGORI</th>
                   <th className="px-4 py-3 text-center">STATUS</th>
-                  <th className="px-4 py-3">ODOMETER & BBM</th>
+                  <th className="px-4 py-3 text-center">ODOMETER & BBM</th>
                   <th className="px-4 py-3 text-center">AKSI CEPAT</th>
                 </tr>
               </thead>
@@ -525,9 +525,7 @@ export default function Dashboard() {
                         </span>
                       </td>
                       <td className="px-4 py-3.5 text-center">
-                        <div className="flex justify-center">
-                          <StatusBadge status={item.status} />
-                        </div>
+                        <StatusBadge status={item.status} />
                       </td>
                       <td className="px-4 py-3.5">
                         <div className="flex flex-col space-y-0.5">
@@ -547,21 +545,19 @@ export default function Dashboard() {
                         </div>
                       </td>
                       <td className="px-4 py-3.5 text-center">
-                        <div className="flex justify-center">
-                          <Link
-                            href={item.actionHref}
-                            className={`w-36 h-9 px-3.5 rounded-xl font-bold text-xs inline-flex items-center justify-center transition-all shadow-2xs cursor-pointer ${
-                              item.status === "Disewa"
-                                ? "bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200"
-                                : item.status === "Servis"
-                                  ? "bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200"
-                                  : item.status === "Dipesan"
-                                    ? "bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200"
-                                    : "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/60"
-                            }`}>
-                            <span>{item.actionText}</span>
-                          </Link>
-                        </div>
+                        <Link
+                          href={item.actionHref}
+                          className={`w-36 h-9 px-3.5 rounded-xl font-bold text-xs inline-flex items-center justify-center transition-all shadow-2xs cursor-pointer ${
+                            item.status === "Disewa"
+                              ? "bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200"
+                              : item.status === "Servis"
+                                ? "bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200"
+                                : item.status === "Dipesan"
+                                  ? "bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200"
+                                  : "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/60"
+                          }`}>
+                          <span>{item.actionText}</span>
+                        </Link>
                       </td>
                     </tr>
                   ))
@@ -580,7 +576,7 @@ export default function Dashboard() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
             <span className="text-xs text-slate-500 font-medium">
               Menampilkan <strong className="text-slate-800">{filteredFleet.length}</strong> dari total {kpi.total}{" "}
-              armada di database
+              armada
             </span>
           </div>
         </div>

@@ -43,12 +43,14 @@ export default function BookingCalendarPage() {
   const [activeBooking, setActiveBooking] = useState<CalendarBooking | null>(null);
 
   // Set default active booking saat data selesai dimuat
+  const hasInitializedActive = useRef<boolean>(false);
   useEffect(() => {
-    if (allBookings.length > 0 && !activeBooking) {
-      const currentMonthMatch = allBookings.find((b) => b.month === currentMonth && b.year === currentYear);
-      setActiveBooking(currentMonthMatch || allBookings[0]);
-    }
-  }, [allBookings, activeBooking, currentMonth, currentYear]);
+    if (hasInitializedActive.current || allBookings.length === 0) return;
+
+    const currentMonthMatch = allBookings.find((b) => b.month === currentMonth && b.year === currentYear);
+    setActiveBooking(currentMonthMatch || allBookings[0]);
+    hasInitializedActive.current = true;
+  }, [allBookings, currentMonth, currentYear]);
 
   // Tutup dropdown saat klik di luar
   useEffect(() => {
@@ -386,18 +388,19 @@ export default function BookingCalendarPage() {
             </div>
 
             {/* Vehicle Card Header */}
-            <div className="p-4 bg-slate-50 border border-slate-100 rounded-2xl flex items-center gap-3.5 shadow-2xs">
-              <div className="w-12 h-12 rounded-xl bg-amber-600 text-white flex items-center justify-center font-black shrink-0 shadow-sm text-xs">
-                {activeBooking.unitInitial}
+            <div className="p-4 bg-slate-50 border border-slate-100 rounded-2xl shadow-2xs space-y-2.5">
+              <h4 className="font-extrabold text-sm text-slate-900">{activeBooking.unitName}</h4>
+
+              {/* Plat gaya plat nomor */}
+              <div className="inline-flex items-center px-3 py-1 rounded-md bg-white border-2 border-slate-900 shadow-2xs">
+                <span className="font-mono text-sm font-black tracking-widest text-slate-900 whitespace-nowrap">
+                  {activeBooking.shortNopol}
+                </span>
               </div>
-              <div>
-                <h4 className="font-extrabold text-sm text-slate-900">{activeBooking.unitName}</h4>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-slate-900 text-white">
-                    {activeBooking.shortNopol}
-                  </span>
-                  <span className="text-xs text-emerald-700 font-semibold">{activeBooking.poolLocation}</span>
-                </div>
+
+              <div className="flex items-center gap-2 text-xs text-emerald-700 font-semibold">
+                <span className="material-symbols-outlined text-[18px] leading-none shrink-0">location_on</span>
+                <span className="leading-snug">{activeBooking.poolLocation}</span>
               </div>
             </div>
 
@@ -486,9 +489,7 @@ export default function BookingCalendarPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
           <div>
             <h2 className="text-lg font-bold text-slate-900">Daftar Rental Transaksi</h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Rekapitulasi riwayat penyewaan aktif, pesanan, dan selesai dari database PostgreSQL
-            </p>
+            <p className="text-xs text-slate-500 mt-0.5">Rekapitulasi riwayat penyewaan aktif, pesanan, dan selesai.</p>
           </div>
           <div className="flex items-center gap-2.5">
             <span className="text-xs font-bold text-slate-400">FILTER STATUS:</span>
@@ -506,21 +507,21 @@ export default function BookingCalendarPage() {
         </div>
 
         <div className="overflow-x-auto rounded-xl border border-slate-200">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="w-full text-left border-collapse text-xs divide-y divide-slate-200">
             <thead>
-              <tr className="bg-slate-50 text-slate-600 font-bold uppercase h-11 border-b border-slate-200">
-                <th className="px-4 py-3">Kode Booking</th>
-                <th className="px-4 py-3">Pelanggan</th>
-                <th className="px-4 py-3">Kendaraan</th>
-                <th className="px-4 py-3">Periode</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3 text-right">Aksi</th>
+              <tr className="bg-slate-50 text-slate-600 font-bold uppercase h-11 border-b border-slate-200 divide-x divide-slate-200">
+                <th className="px-4 py-3 text-center">Kode Booking</th>
+                <th className="px-4 py-3 text-center">Pelanggan</th>
+                <th className="px-4 py-3 text-center">Kendaraan</th>
+                <th className="px-4 py-3 text-center">Periode</th>
+                <th className="px-4 py-3 text-center">Status</th>
+                <th className="px-4 py-3 text-center">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-700">
+            <tbody className="divide-y divide-slate-200 text-slate-700">
               {filteredTableData.length > 0 ? (
                 filteredTableData.map((item) => (
-                  <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
+                  <tr key={item.id} className="hover:bg-slate-50/80 transition-colors divide-x divide-slate-200">
                     <td className="px-4 py-3.5 font-mono font-bold text-slate-900">{item.bookingCode}</td>
                     <td className="px-4 py-3.5">
                       <div className="font-bold text-slate-900 text-sm">{item.renterName}</div>
@@ -530,30 +531,34 @@ export default function BookingCalendarPage() {
                       <div className="font-bold text-slate-900">{item.unitName}</div>
                       <div className="text-slate-500 font-mono text-[11px] mt-0.5">{item.shortNopol}</div>
                     </td>
-                    <td className="px-4 py-3.5 font-medium text-slate-800">
-                      {item.startDateFull} s.d {item.endDateFull}
-                    </td>
                     <td className="px-4 py-3.5">
-                      <span
-                        className={`px-2.5 py-1 rounded-full text-[11px] font-bold border ${
-                          item.status === "Disewa"
-                            ? "bg-sky-50 text-sky-700 border-sky-200"
-                            : item.status === "Dipesan"
-                              ? "bg-amber-50 text-amber-700 border-amber-200"
-                              : item.status === "Servis"
-                                ? "bg-rose-50 text-rose-700 border-rose-200"
-                                : "bg-emerald-50 text-emerald-700 border-emerald-200"
-                        }`}>
-                        {item.status}
-                      </span>
+                      <PeriodCell start={item.startDateFull} end={item.endDateFull} duration={item.duration} />
                     </td>
-                    <td className="px-4 py-3.5 text-right">
-                      <button
-                        type="button"
-                        onClick={() => handleViewDetail(item)}
-                        className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer">
-                        Detail
-                      </button>
+                    <td className="px-4 py-3.5 text-center">
+                      <div className="flex justify-center">
+                        <span
+                          className={`px-2.5 py-1 rounded-full text-[11px] font-bold border ${
+                            item.status === "Disewa"
+                              ? "bg-sky-50 text-sky-700 border-sky-200"
+                              : item.status === "Dipesan"
+                                ? "bg-amber-50 text-amber-700 border-amber-200"
+                                : item.status === "Servis"
+                                  ? "bg-rose-50 text-rose-700 border-rose-200"
+                                  : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          }`}>
+                          {item.status}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3.5 text-center">
+                      <div className="flex justify-center">
+                        <button
+                          type="button"
+                          onClick={() => handleViewDetail(item)}
+                          className="w-24 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer border border-slate-200/60">
+                          Detail
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -617,6 +622,32 @@ function BookingsPageSkeleton() {
             <div key={i} className="h-14 bg-slate-50 rounded-xl border border-slate-100"></div>
           ))}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function PeriodCell({ start, end, duration }: { start: string; end: string; duration?: string }) {
+  const [startDate, startTime = ""] = start.split(" • ");
+  const [endDate, endTime = ""] = end.split(" • ");
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center gap-2">
+        <span className="w-12 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mulai</span>
+        <span className="font-bold text-slate-900">{startDate}</span>
+        <span className="font-mono text-[11px] text-slate-500">{startTime.replace(" WIB", "")}</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="w-12 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Selesai</span>
+        <span className="font-bold text-slate-900">{endDate}</span>
+        <span className="font-mono text-[11px] text-slate-500">{endTime.replace(" WIB", "")}</span>
+        <span className="text-[10px] font-semibold text-slate-400">WIB</span>
+        {duration && (
+          <span className="ml-1 px-1.5 py-0.5 rounded bg-sky-50 border border-sky-200 text-sky-700 text-[10px] font-bold">
+            {duration}
+          </span>
+        )}
       </div>
     </div>
   );

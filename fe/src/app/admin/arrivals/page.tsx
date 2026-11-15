@@ -37,7 +37,7 @@ export default function ArrivalPage() {
             <span className="text-slate-800 font-bold">Jadwal Kedatangan</span>
           </div>
           <h1 className="text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Monitoring Kedatangan Unit (Check-In)
+            Monitoring Kedatangan Unit
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
             Pantau kendaraan yang sedang dalam perjalanan kembali ke pool, lakukan inspeksi pengembalian, dan cek
@@ -124,10 +124,10 @@ export default function ArrivalPage() {
           <table className="w-full text-left border-collapse text-xs divide-y divide-slate-200">
             <thead>
               <tr className="bg-slate-50 text-slate-600 font-bold uppercase h-11 divide-x divide-slate-200">
-                <th className="px-4 py-3">ID / Booking</th>
-                <th className="px-4 py-3">Kendaraan</th>
-                <th className="px-4 py-3">Penyewa & Driver</th>
-                <th className="px-4 py-3">Asal / Estimasi Tiba</th>
+                <th className="px-4 py-3 text-center">Kode Booking</th>
+                <th className="px-4 py-3 text-center">Kendaraan</th>
+                <th className="px-4 py-3 text-center">Penyewa & Driver</th>
+                <th className="px-4 py-3 text-center">Asal / Estimasi Tiba</th>
                 <th className="px-4 py-3 text-center">Status</th>
                 <th className="px-4 py-3 text-center">Aksi Operasional</th>
               </tr>

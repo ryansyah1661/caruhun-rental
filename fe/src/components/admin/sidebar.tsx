@@ -24,7 +24,7 @@ export const ADMIN_MENU: MenuItem[] = [
   { href: "/admin/customers", label: "Pelanggan", icon: "groups", roles: OFFICE, section: "ARMADA & LAPANGAN" },
   { href: "/admin/attendance", label: "Kehadiran", icon: "badge", roles: ALL, section: "ARMADA & LAPANGAN" },
   {
-    href: "/admin/pemeriksaan-kendaraan",
+    href: "/admin/inspections",
     label: "Pemeriksaan Kendaraan",
     icon: "fact_check",
     roles: ALL,
@@ -68,10 +68,7 @@ function SidebarSkeleton() {
           {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="h-10 px-3 py-2 rounded-xl flex items-center gap-3 bg-stone-800/40">
               <div className="w-5 h-5 rounded-lg bg-stone-700/50 shrink-0" />
-              <div
-                className="h-3 rounded-full bg-stone-700/40"
-                style={{ width: `${55 + (i % 3) * 15}%` }}
-              />
+              <div className="h-3 rounded-full bg-stone-700/40" style={{ width: `${55 + (i % 3) * 15}%` }} />
             </div>
           ))}
         </div>
@@ -86,10 +83,7 @@ function SidebarSkeleton() {
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="h-10 px-3 py-2 rounded-xl flex items-center gap-3 bg-stone-800/40">
               <div className="w-5 h-5 rounded-lg bg-stone-700/50 shrink-0" />
-              <div
-                className="h-3 rounded-full bg-stone-700/40"
-                style={{ width: `${50 + (i % 2) * 20}%` }}
-              />
+              <div className="h-3 rounded-full bg-stone-700/40" style={{ width: `${50 + (i % 2) * 20}%` }} />
             </div>
           ))}
         </div>
@@ -104,10 +98,7 @@ function SidebarSkeleton() {
           {[1, 2, 3].map((i) => (
             <div key={i} className="h-10 px-3 py-2 rounded-xl flex items-center gap-3 bg-stone-800/40">
               <div className="w-5 h-5 rounded-lg bg-stone-700/50 shrink-0" />
-              <div
-                className="h-3 rounded-full bg-stone-700/40"
-                style={{ width: `${60 + (i % 3) * 12}%` }}
-              />
+              <div className="h-3 rounded-full bg-stone-700/40" style={{ width: `${60 + (i % 3) * 12}%` }} />
             </div>
           ))}
         </div>
