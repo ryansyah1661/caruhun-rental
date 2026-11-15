@@ -1,69 +1,31 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import Link from "next/link";
-
-// Types
-type ArrivalStatus = "Dalam Perjalanan" | "Tiba di Pool" | "Inspeksi Selesai" | "Terlambat";
-
-interface ArrivalItem {
-  id: string;
-  bookingCode: string;
-  unitName: string;
-  nopol: string;
-  renterName: string;
-  renterPhone: string;
-  originOrDestination: string;
-  estimatedArrival: string;
-  driverName: string;
-  status: ArrivalStatus;
-}
-
-// Dummy Data Kedatangan
-const ARRIVAL_DATA: ArrivalItem[] = [
-  {
-    id: "1",
-    bookingCode: "#BK-2024-1024",
-    unitName: "Toyota Innova Zenix 2.0 V",
-    nopol: "B 2884 SSR",
-    renterName: "Hendro Wicaksono",
-    renterPhone: "0812-9876-5432",
-    originOrDestination: "Bogor Inner City / Puncak",
-    estimatedArrival: "Hari Ini, 16:00 WIB",
-    driverName: "Lepas Kunci (Self-Drive)",
-    status: "Dalam Perjalanan",
-  },
-  {
-    id: "2",
-    bookingCode: "#CRH-2410-091",
-    unitName: "Toyota Avanza 1.5 G",
-    nopol: "B 1482 KFD",
-    renterName: "PT Surya Logistik",
-    renterPhone: "0812-3456-7890",
-    originOrDestination: "Bandara Soekarno-Hatta (T3)",
-    estimatedArrival: "Hari Ini, 14:30 WIB",
-    driverName: "Ahmad Sopian",
-    status: "Tiba di Pool",
-  },
-  {
-    id: "3",
-    bookingCode: "#CRH-2410-088",
-    unitName: "Honda Brio RS",
-    nopol: "D 2091 AGH",
-    renterName: "Rizky Kurniawan",
-    renterPhone: "0851-4161-0411",
-    originOrDestination: "Kawasan Industri Cikarang",
-    estimatedArrival: "Kemarin, 17:00 WIB",
-    driverName: "Lepas Kunci (Self-Drive)",
-    status: "Inspeksi Selesai",
-  },
-];
+import { useArrivals } from "@/lib/use-arrivals";
 
 export default function ArrivalPage() {
-  const [filterStatus, setFilterStatus] = useState<string>("Semua");
+  const { data, isLoading } = useArrivals();
 
-  const filteredData =
-    filterStatus === "Semua" ? ARRIVAL_DATA : ARRIVAL_DATA.filter((item) => item.status === filterStatus);
+  const [filterStatus, setFilterStatus] = useState<string>("Semua");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
+  const arrivals = useMemo(() => data?.arrivals || [], [data?.arrivals]);
+  const stats = data?.stats || { onTheWay: 0, needCheck: 0, inspectedDone: 0 };
+
+  // Filter logika pencarian & tab status
+  const filteredData = useMemo(() => {
+    return arrivals.filter((item) => {
+      const matchStatus = filterStatus === "Semua" || item.status === filterStatus;
+      const fullSearch = `${item.nopol} ${item.unitName} ${item.renterName} ${item.bookingCode}`.toLowerCase();
+      const matchSearch = fullSearch.includes(searchQuery.toLowerCase());
+      return matchStatus && matchSearch;
+    });
+  }, [arrivals, filterStatus, searchQuery]);
+
+  if (isLoading) {
+    return <ArrivalsPageSkeleton />;
+  }
 
   return (
     <div className="w-full font-body-md text-slate-800 antialiased bg-slate-50/50 min-h-screen p-6 lg:p-8 space-y-6">
@@ -86,6 +48,7 @@ export default function ArrivalPage() {
         <div className="flex items-center gap-2 flex-wrap shrink-0">
           <button
             type="button"
+            onClick={() => window.print()}
             className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer">
             <span className="material-symbols-outlined text-[18px] text-slate-500">print</span>
             <span>Cetak Rekap Harian</span>
@@ -93,12 +56,12 @@ export default function ArrivalPage() {
         </div>
       </div>
 
-      {/* ================= STATS / METRICS CARDS ================= */}
+      {/* ================= STATS / METRICS CARDS (DARI DATABASE) ================= */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs flex items-center justify-between">
           <div>
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Dalam Perjalanan Pulang</span>
-            <h3 className="text-2xl font-black text-slate-900 mt-1">1 Unit</h3>
+            <h3 className="text-2xl font-black text-slate-900 mt-1">{stats.onTheWay} Unit</h3>
           </div>
           <div className="w-12 h-12 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold">
             <span className="material-symbols-outlined">directions_car</span>
@@ -108,7 +71,7 @@ export default function ArrivalPage() {
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs flex items-center justify-between">
           <div>
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Tiba di Pool (Perlu Cek)</span>
-            <h3 className="text-2xl font-black text-slate-900 mt-1">1 Unit</h3>
+            <h3 className="text-2xl font-black text-slate-900 mt-1">{stats.needCheck} Unit</h3>
           </div>
           <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
             <span className="material-symbols-outlined">assignment_returned</span>
@@ -118,7 +81,7 @@ export default function ArrivalPage() {
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs flex items-center justify-between">
           <div>
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Inspeksi Selesai</span>
-            <h3 className="text-2xl font-black text-slate-900 mt-1">15 Unit</h3>
+            <h3 className="text-2xl font-black text-slate-900 mt-1">{stats.inspectedDone} Unit</h3>
           </div>
           <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
             <span className="material-symbols-outlined">task_alt</span>
@@ -131,7 +94,7 @@ export default function ArrivalPage() {
         {/* Filter & Search Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
           <div className="flex items-center gap-1.5 overflow-x-auto text-xs">
-            {["Semua", "Dalam Perjalanan", "Tiba di Pool", "Inspeksi Selesai"].map((status) => (
+            {["Semua", "Dalam Perjalanan", "Tiba di Pool", "Inspeksi Selesai", "Terlambat"].map((status) => (
               <button
                 key={status}
                 onClick={() => setFilterStatus(status)}
@@ -148,78 +111,109 @@ export default function ArrivalPage() {
           <div className="w-full sm:w-72">
             <input
               type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari nopol, unit, atau pelanggan..."
               className="w-full h-10 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-amber-500"
             />
           </div>
         </div>
 
-        {/* Tabel Data Kedatangan */}
+        {/* Tabel Data Kedatangan dengan Pembatas Kolom (divide-x) */}
         <div className="overflow-x-auto rounded-xl border border-slate-200">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="w-full text-left border-collapse text-xs divide-y divide-slate-200">
             <thead>
-              <tr className="bg-slate-50 text-slate-600 font-bold uppercase h-11 border-b border-slate-200">
+              <tr className="bg-slate-50 text-slate-600 font-bold uppercase h-11 divide-x divide-slate-200">
                 <th className="px-4 py-3">ID / Booking</th>
                 <th className="px-4 py-3">Kendaraan</th>
                 <th className="px-4 py-3">Penyewa & Driver</th>
                 <th className="px-4 py-3">Asal / Estimasi Tiba</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3 text-right">Aksi Operasional</th>
+                <th className="px-4 py-3 text-center">Status</th>
+                <th className="px-4 py-3 text-center">Aksi Operasional</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-700">
-              {filteredData.map((item) => {
-                let statusBadge = "bg-sky-50 text-sky-700 border-sky-200";
-                if (item.status === "Tiba di Pool") statusBadge = "bg-amber-50 text-amber-700 border-amber-200";
-                if (item.status === "Inspeksi Selesai")
-                  statusBadge = "bg-emerald-50 text-emerald-700 border-emerald-200";
+            <tbody className="divide-y divide-slate-200 text-slate-700">
+              {filteredData.length > 0 ? (
+                filteredData.map((item) => {
+                  let statusBadge = "bg-sky-50 text-sky-700 border-sky-200";
+                  if (item.status === "Tiba di Pool") statusBadge = "bg-amber-50 text-amber-700 border-amber-200";
+                  if (item.status === "Inspeksi Selesai")
+                    statusBadge = "bg-emerald-50 text-emerald-700 border-emerald-200";
+                  if (item.status === "Terlambat") statusBadge = "bg-rose-50 text-rose-700 border-rose-200";
 
-                const cleanBookingId = item.bookingCode.replace("#", "");
+                  const cleanBookingId = item.bookingCode.replace("#", "");
 
-                return (
-                  <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="px-4 py-3.5">
-                      <span className="font-mono font-bold text-slate-900">{item.bookingCode}</span>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <div className="font-bold text-slate-900">{item.unitName}</div>
-                      <div className="font-mono text-[11px] text-slate-500 mt-0.5">{item.nopol}</div>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <div className="font-bold text-slate-900">{item.renterName}</div>
-                      <div className="text-slate-500 text-[11px] mt-0.5">Driver: {item.driverName}</div>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <div className="font-semibold text-slate-900">{item.originOrDestination}</div>
-                      <div className="text-slate-500 text-[11px] mt-0.5">{item.estimatedArrival}</div>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <span
-                        className={`px-2.5 py-1 rounded-lg border font-bold text-[11px] inline-flex items-center gap-1.5 ${statusBadge}`}>
-                        <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
-                        {item.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3.5 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <button
-                          type="button"
-                          className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer">
-                          Riwayat
-                        </button>
-                        <Link
-                          href={`/admin/arrivals/${cleanBookingId}`}
-                          className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition-colors cursor-pointer inline-flex items-center shadow-xs">
-                          Proses Check-In
-                        </Link>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+                  return (
+                    <tr key={item.id} className="hover:bg-slate-50/80 transition-colors divide-x divide-slate-200">
+                      <td className="px-4 py-3.5">
+                        <span className="font-mono font-bold text-slate-900">{item.bookingCode}</span>
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <div className="font-bold text-slate-900">{item.unitName}</div>
+                        <div className="font-mono text-[11px] text-slate-500 mt-0.5">{item.nopol}</div>
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <div className="font-bold text-slate-900">{item.renterName}</div>
+                        <div className="text-slate-500 text-[11px] mt-0.5">Driver: {item.driverName}</div>
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <div className="font-semibold text-slate-900">{item.originOrDestination}</div>
+                        <div className="text-slate-500 text-[11px] mt-0.5">{item.estimatedArrival}</div>
+                      </td>
+                      <td className="px-4 py-3.5 text-center">
+                        <div className="flex justify-center">
+                          <span
+                            className={`px-3 py-1.5 rounded-lg border font-bold text-[11px] inline-flex items-center gap-2 w-44 text-left ${statusBadge}`}>
+                            <span className="w-1.5 h-1.5 rounded-full bg-current shrink-0"></span>
+                            <span className="truncate">{item.status}</span>
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3.5 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <Link
+                            href="/admin/pemeriksaan-kendaraan/masuk"
+                            className="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer w-36 text-left whitespace-nowrap block">
+                            Cek Fisik Masuk
+                          </Link>
+                          <Link
+                            href={`/admin/arrivals/${cleanBookingId}`}
+                            className="px-3 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition-colors cursor-pointer w-36 text-center shadow-xs whitespace-nowrap block">
+                            Proses Check-In
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={6} className="px-4 py-8 text-center text-slate-400">
+                    Tidak ada jadwal kedatangan yang sesuai dengan filter.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
+// Skeleton Loading Komponen
+// ----------------------------------------------------------------------
+function ArrivalsPageSkeleton() {
+  return (
+    <div className="w-full font-body-md text-slate-800 antialiased bg-slate-50/50 min-h-screen p-6 lg:p-8 space-y-6 animate-pulse">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-2xs">
+        <div className="space-y-2">
+          <div className="h-3 bg-slate-100 rounded w-48"></div>
+          <div className="h-8 bg-slate-200 rounded-lg w-80"></div>
+          <div className="h-4 bg-slate-100 rounded w-96"></div>
+        </div>
+        <div className="h-10 w-36 bg-slate-100 rounded-xl"></div>
       </div>
     </div>
   );

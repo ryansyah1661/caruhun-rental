@@ -27,7 +27,7 @@ export const ADMIN_MENU: MenuItem[] = [
     href: "/admin/pemeriksaan-kendaraan",
     label: "Pemeriksaan Kendaraan",
     icon: "fact_check",
-    roles: ALL, // Diubah ke ALL agar fleksibel diakses admin/office/field
+    roles: ALL,
     section: "ARMADA & LAPANGAN",
   },
   { href: "/admin/claims", label: "Kerusakan & Klaim", icon: "car_crash", roles: FIELD, section: "ARMADA & LAPANGAN" },
@@ -56,9 +56,69 @@ interface AdminSidebarProps {
   onClose: () => void;
 }
 
+function SidebarSkeleton() {
+  return (
+    <div className="flex-1 px-3 space-y-6 mt-2 animate-pulse overflow-hidden">
+      {/* Seksi 1: OPERASIONAL */}
+      <div className="space-y-1.5">
+        <div className="px-3 pb-1.5">
+          <div className="h-2 w-20 bg-stone-700/60 rounded-full" />
+        </div>
+        <div className="space-y-1">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="h-10 px-3 py-2 rounded-xl flex items-center gap-3 bg-stone-800/40">
+              <div className="w-5 h-5 rounded-lg bg-stone-700/50 shrink-0" />
+              <div
+                className="h-3 rounded-full bg-stone-700/40"
+                style={{ width: `${55 + (i % 3) * 15}%` }}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Seksi 2: ARMADA & LAPANGAN */}
+      <div className="space-y-1.5">
+        <div className="px-3 pb-1.5">
+          <div className="h-2 w-28 bg-stone-700/60 rounded-full" />
+        </div>
+        <div className="space-y-1">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-10 px-3 py-2 rounded-xl flex items-center gap-3 bg-stone-800/40">
+              <div className="w-5 h-5 rounded-lg bg-stone-700/50 shrink-0" />
+              <div
+                className="h-3 rounded-full bg-stone-700/40"
+                style={{ width: `${50 + (i % 2) * 20}%` }}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Seksi 3: MANAJEMEN & WEBSITE */}
+      <div className="space-y-1.5">
+        <div className="px-3 pb-1.5">
+          <div className="h-2 w-32 bg-stone-700/60 rounded-full" />
+        </div>
+        <div className="space-y-1">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-10 px-3 py-2 rounded-xl flex items-center gap-3 bg-stone-800/40">
+              <div className="w-5 h-5 rounded-lg bg-stone-700/50 shrink-0" />
+              <div
+                className="h-3 rounded-full bg-stone-700/40"
+                style={{ width: `${60 + (i % 3) * 12}%` }}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
-  const { data: me } = useMe();
+  const { data: me, isLoading } = useMe();
 
   const items = me ? ADMIN_MENU.filter((m) => m.roles.includes(me.role)) : [];
   const sections = Array.from(new Set(items.map((i) => i.section || "LAINNYA")));
@@ -85,46 +145,49 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
             </div>
           </div>
 
-          {/* Nav Items Berdasarkan Grup / Section */}
-          <nav className="flex-1 px-3 space-y-6 overflow-y-auto mt-2">
-            {sections.map((sectionName) => {
-              const sectionItems = items.filter((i) => (i.section || "LAINNYA") === sectionName);
-              if (sectionItems.length === 0) return null;
+          {/* Nav Items Berdasarkan Grup / Section atau Skeleton saat loading */}
+          {isLoading || !me ? (
+            <SidebarSkeleton />
+          ) : (
+            <nav className="flex-1 px-3 space-y-6 overflow-y-auto mt-2">
+              {sections.map((sectionName) => {
+                const sectionItems = items.filter((i) => (i.section || "LAINNYA") === sectionName);
+                if (sectionItems.length === 0) return null;
 
-              return (
-                <div key={sectionName} className="space-y-1">
-                  <div className="px-3 pb-1.5 flex items-center justify-between">
-                    <span className="text-[10px] font-extrabold text-stone-400 uppercase tracking-widest">
-                      {sectionName}
-                    </span>
+                return (
+                  <div key={sectionName} className="space-y-1">
+                    <div className="px-3 pb-1.5 flex items-center justify-between">
+                      <span className="text-[10px] font-extrabold text-stone-400 uppercase tracking-widest">
+                        {sectionName}
+                      </span>
+                    </div>
+
+                    {sectionItems.map((m) => {
+                      const active =
+                        m.href === "/admin"
+                          ? pathname === "/admin"
+                          : pathname === m.href || pathname.startsWith(`${m.href}/`);
+
+                      return (
+                        <Link
+                          key={m.href}
+                          href={m.href}
+                          onClick={onClose}
+                          className={`min-h-[40px] px-3 py-2 rounded-xl flex items-center gap-3 text-xs transition-colors ${
+                            active
+                              ? "bg-amber-600 text-white font-extrabold shadow-xs"
+                              : "font-medium text-stone-300 hover:text-white hover:bg-stone-800/60"
+                          }`}>
+                          <span className="material-symbols-outlined text-[18px]">{m.icon}</span>
+                          <span>{m.label}</span>
+                        </Link>
+                      );
+                    })}
                   </div>
-
-                  {sectionItems.map((m) => {
-                    // Logika aktif diperbarui agar mencakup sub-halaman (seperti /keluar dan /masuk)
-                    const active =
-                      m.href === "/admin"
-                        ? pathname === "/admin"
-                        : pathname === m.href || pathname.startsWith(`${m.href}/`);
-
-                    return (
-                      <Link
-                        key={m.href}
-                        href={m.href}
-                        onClick={onClose}
-                        className={`min-h-[40px] px-3 py-2 rounded-xl flex items-center gap-3 text-xs transition-colors ${
-                          active
-                            ? "bg-amber-600 text-white font-extrabold shadow-xs"
-                            : "font-medium text-stone-300 hover:text-white hover:bg-stone-800/60"
-                        }`}>
-                        <span className="material-symbols-outlined text-[18px]">{m.icon}</span>
-                        <span>{m.label}</span>
-                      </Link>
-                    );
-                  })}
-                </div>
-              );
-            })}
-          </nav>
+                );
+              })}
+            </nav>
+          )}
         </div>
       </aside>
     </>

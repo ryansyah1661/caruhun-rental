@@ -8,7 +8,7 @@ interface AdminHeaderProps {
 }
 
 export default function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
-  const { data: me } = useMe();
+  const { data: me, isLoading } = useMe();
 
   return (
     <header className="sticky top-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 px-space-md lg:px-space-lg flex items-center justify-between gap-space-md">
@@ -34,7 +34,17 @@ export default function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
           <span className="material-symbols-outlined">notifications</span>
           <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-primary-container ring-2 ring-surface-container-lowest"></span>
         </button>
-        {me && (
+
+        {/* User Profile / Skeleton saat loading */}
+        {isLoading || !me ? (
+          <div className="flex items-center gap-2 pl-space-xs animate-pulse">
+            <div className="w-8 h-8 rounded-full bg-stone-200" />
+            <div className="hidden sm:flex flex-col gap-1 text-left">
+              <div className="w-16 h-3 rounded bg-stone-200" />
+              <div className="w-12 h-2 rounded bg-stone-100" />
+            </div>
+          </div>
+        ) : (
           <div className="flex items-center gap-space-sm pl-space-xs">
             <img
               alt="Profile"
