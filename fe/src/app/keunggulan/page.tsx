@@ -181,17 +181,17 @@ export default function KeunggulanPage() {
           </div>
 
           <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm">
-            <table className="w-full text-left border-collapse text-xs sm:text-sm">
+            <table className="w-full text-left border-collapse text-xs sm:text-sm divide-y divide-slate-200">
               <thead>
-                <tr className="bg-slate-900 text-white">
-                  <th className="px-5 py-4 font-bold">Aspek Layanan</th>
-                  <th className="px-5 py-4 font-bold text-amber-400">Caruhun Rental Armada</th>
-                  <th className="px-5 py-4 font-semibold text-slate-400">Rental Konvensional</th>
+                <tr className="bg-slate-900 text-white divide-x divide-slate-700">
+                  <th className="px-5 py-4 font-bold text-center">Aspek Layanan</th>
+                  <th className="px-5 py-4 font-bold text-center text-amber-400">Caruhun Rental Armada</th>
+                  <th className="px-5 py-4 font-semibold text-center text-slate-400">Rental Konvensional</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 bg-white">
                 {PERBANDINGAN_LAYANAN.map((row, idx) => (
-                  <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                  <tr key={idx} className="hover:bg-slate-50 transition-colors divide-x divide-slate-200">
                     <td className="px-5 py-4 font-bold text-slate-900">{row.aspek}</td>
                     <td className="px-5 py-4 text-emerald-700 font-semibold">
                       <div className="flex items-center gap-2">

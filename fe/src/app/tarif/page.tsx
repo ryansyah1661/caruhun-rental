@@ -436,7 +436,7 @@ Mohon info ketersediaan jadwal pengantaran. Terima kasih.`;
 
                 <Link
                   href={`/cari?paket=${packageTab}`}
-                  className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs inline-flex items-center justify-center transition-all ml-auto lg:ml-2">
+                  className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-extrabold text-xs inline-flex items-center justify-center transition-all ml-auto lg:ml-2">
                   Cek Unit →
                 </Link>
               </div>
@@ -448,29 +448,29 @@ Mohon info ketersediaan jadwal pengantaran. Terima kasih.`;
                 <table className="w-full text-left border-collapse text-xs sm:text-sm">
                   <thead>
                     {packageTab === "lepas-kunci" && (
-                      <tr className="bg-stone-900 text-white text-[11px] uppercase tracking-wider">
+                      <tr className="bg-slate-900 text-white text-[11px] uppercase tracking-wider divide-x divide-slate-700">
                         <th className="px-5 py-4 font-bold">Tipe Unit</th>
                         <th className="px-5 py-4 font-bold">12 Jam</th>
-                        <th className="px-5 py-4 font-bold text-amber-400">24 Jam (Harian)</th>
+                        <th className="px-5 py-4 font-bold">24 Jam (Harian)</th>
                         <th className="px-5 py-4 font-bold">30 Hari (Bulanan)</th>
                         <th className="px-5 py-4 font-bold">Deposit Jaminan</th>
                       </tr>
                     )}
 
                     {packageTab === "dengan-driver" && (
-                      <tr className="bg-stone-900 text-white text-[11px] uppercase tracking-wider">
+                      <tr className="bg-slate-900 text-white text-[11px] uppercase tracking-wider divide-x divide-slate-700">
                         <th className="px-5 py-4 font-bold">Tipe Unit</th>
                         <th className="px-5 py-4 font-bold">12 Jam (Dalam Kota)</th>
-                        <th className="px-5 py-4 font-bold text-amber-400">24 Jam / Full Day</th>
+                        <th className="px-5 py-4 font-bold">24 Jam / Full Day</th>
                         <th className="px-5 py-4 font-bold">Overtime / Jam</th>
                         <th className="px-5 py-4 font-bold">Deposit Jaminan</th>
                       </tr>
                     )}
 
                     {packageTab === "bandara" && (
-                      <tr className="bg-stone-900 text-white text-[11px] uppercase tracking-wider">
+                      <tr className="bg-slate-900 text-white text-[11px] uppercase tracking-wider divide-x divide-slate-700">
                         <th className="px-5 py-4 font-bold">Tipe Unit</th>
-                        <th className="px-5 py-4 font-bold text-amber-400">Bandara Soetta (CGK)</th>
+                        <th className="px-5 py-4 font-bold">Bandara Soetta (CGK)</th>
                         <th className="px-5 py-4 font-bold">Bandara Halim (HLP)</th>
                         <th className="px-5 py-4 font-bold">Stasiun Whoosh Halim</th>
                         <th className="px-5 py-4 font-bold">Kapasitas Bagasi</th>
@@ -478,9 +478,9 @@ Mohon info ketersediaan jadwal pengantaran. Terima kasih.`;
                     )}
                   </thead>
 
-                  <tbody className="divide-y divide-slate-200/80">
+                  <tbody className="divide-y divide-slate-200">
                     {filteredRates.map((item) => (
-                      <tr key={item.id} className="hover:bg-amber-50/40 transition-colors">
+                      <tr key={item.id} className="hover:bg-slate-50 transition-colors divide-x divide-slate-200">
                         <td className="px-5 py-4">
                           <div className="font-extrabold text-slate-900">{item.name}</div>
                           <div className="text-[11px] text-slate-500 mt-0.5">
@@ -491,20 +491,22 @@ Mohon info ketersediaan jadwal pengantaran. Terima kasih.`;
                         {/* Kolom Paket 1: Lepas Kunci */}
                         {packageTab === "lepas-kunci" && item.selfDrive && (
                           <>
-                            <td className="px-5 py-4 text-slate-700 font-medium">
+                            <td className="px-5 py-4 text-slate-800 font-semibold">
                               {item.selfDrive.rate12h ? (
                                 `Rp ${item.selfDrive.rate12h.toLocaleString("id-ID")}`
                               ) : (
-                                <span className="text-[11px] text-slate-400 italic">Min. 24 jam</span>
+                                <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-slate-100 border border-slate-200 text-[11px] font-bold text-slate-600">
+                                  Min. 24 jam
+                                </span>
                               )}
                             </td>
-                            <td className="px-5 py-4 font-extrabold text-amber-700 bg-amber-50/50">
+                            <td className="px-5 py-4 text-slate-800 font-semibold">
                               Rp {item.selfDrive.rate24h.toLocaleString("id-ID")}
                             </td>
                             <td className="px-5 py-4 text-slate-800 font-semibold">
                               Rp {item.selfDrive.rate30d.toLocaleString("id-ID")}
                             </td>
-                            <td className="px-5 py-4 text-slate-700 font-semibold">
+                            <td className="px-5 py-4 text-slate-800 font-semibold">
                               Rp {item.selfDrive.deposit.toLocaleString("id-ID")}
                             </td>
                           </>
@@ -513,13 +515,13 @@ Mohon info ketersediaan jadwal pengantaran. Terima kasih.`;
                         {/* Kolom Paket 2: Dengan Driver */}
                         {packageTab === "dengan-driver" && (
                           <>
-                            <td className="px-5 py-4 text-slate-700 font-semibold">
+                            <td className="px-5 py-4 text-slate-800 font-semibold">
                               Rp {item.withDriver.rate12h.toLocaleString("id-ID")}
                             </td>
-                            <td className="px-5 py-4 font-extrabold text-amber-700 bg-amber-50/50">
+                            <td className="px-5 py-4 text-slate-800 font-semibold">
                               Rp {item.withDriver.rate24h.toLocaleString("id-ID")}
                             </td>
-                            <td className="px-5 py-4 text-slate-700 font-medium">
+                            <td className="px-5 py-4 text-slate-800 font-semibold">
                               Rp {item.withDriver.overtimePerHour.toLocaleString("id-ID")} / jam
                             </td>
                             <td className="px-5 py-4">
@@ -534,7 +536,7 @@ Mohon info ketersediaan jadwal pengantaran. Terima kasih.`;
                         {/* Kolom Paket 3: Drop-off Bandara */}
                         {packageTab === "bandara" && (
                           <>
-                            <td className="px-5 py-4 font-extrabold text-amber-700 bg-amber-50/50">
+                            <td className="px-5 py-4 text-slate-800 font-semibold">
                               Rp {item.airport.cgk.toLocaleString("id-ID")}
                             </td>
                             <td className="px-5 py-4 text-slate-800 font-semibold">
@@ -639,14 +641,14 @@ Mohon info ketersediaan jadwal pengantaran. Terima kasih.`;
       {activeTab === "ongkir" && (
         <section className="py-12">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-            <div className="bg-stone-900 text-white rounded-3xl p-6 sm:p-8 shadow-lg grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+            <div className="bg-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-lg grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
               <div className="lg:col-span-7 space-y-4">
                 <div>
                   <span className="text-[11px] font-bold text-amber-400 uppercase tracking-wider">
                     Simulasi Biaya Pengantaran
                   </span>
                   <h2 className="text-xl sm:text-2xl font-extrabold mt-1">Hitung Ongkir ke Lokasi Anda</h2>
-                  <p className="text-xs text-stone-400 mt-1">
+                  <p className="text-xs text-slate-400 mt-1">
                     Ongkir dihitung per kecamatan, per unit, per arah (antar saja atau jemput saja). Pengambilan
                     langsung di Pool Caruhun gratis biaya ongkir.
                   </p>
@@ -654,25 +656,25 @@ Mohon info ketersediaan jadwal pengantaran. Terima kasih.`;
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-slate-900">
                   <div>
-                    <label className="block text-[11px] font-bold text-stone-300 mb-1">Pilih Kecamatan / Area</label>
+                    <label className="block text-[11px] font-bold text-slate-300 mb-1">Pilih Kecamatan / Area</label>
                     <CustomSelect value={selectedZoneId} onChange={setSelectedZoneId} options={zoneSelectOptions} />
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-stone-300 mb-1">Waktu Antar / Jemput</label>
+                    <label className="block text-[11px] font-bold text-slate-300 mb-1">Waktu Antar / Jemput</label>
                     <CustomSelect value={selectedTimeSlot} onChange={setSelectedTimeSlot} options={TIME_SLOT_OPTIONS} />
                   </div>
                 </div>
               </div>
 
-              <div className="lg:col-span-5 bg-stone-800/90 border border-stone-700 rounded-2xl p-5 flex flex-col justify-between space-y-4">
+              <div className="lg:col-span-5 bg-slate-800/90 border border-slate-700 rounded-2xl p-5 flex flex-col justify-between space-y-4">
                 <div>
-                  <span className="text-[11px] text-stone-400 block">Estimasi Ongkir ({selectedZone.district}):</span>
+                  <span className="text-[11px] text-slate-400 block">Estimasi Ongkir ({selectedZone.district}):</span>
                   <div className="text-3xl font-extrabold text-amber-400 mt-1">
                     Rp {calculatedOngkir.toLocaleString("id-ID")}
-                    <span className="text-xs font-normal text-stone-400"> / arah</span>
+                    <span className="text-xs font-normal text-slate-400"> / arah</span>
                   </div>
-                  <span className="text-[11px] text-stone-400 block mt-1">
+                  <span className="text-[11px] text-slate-400 block mt-1">
                     Pulang-Pergi (Antar + Jemput):{" "}
                     <strong className="text-white">Rp {(calculatedOngkir * 2).toLocaleString("id-ID")}</strong>
                   </span>
@@ -711,20 +713,20 @@ Mohon info ketersediaan jadwal pengantaran. Terima kasih.`;
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse text-xs sm:text-sm">
                     <thead>
-                      <tr className="bg-slate-100 text-slate-700 text-[11px] uppercase tracking-wider border-b border-slate-200">
+                      <tr className="bg-slate-100 text-slate-700 text-[11px] uppercase tracking-wider border-b border-slate-200 divide-x divide-slate-200">
                         <th className="px-5 py-3.5 font-extrabold">Kecamatan / Area</th>
                         <th className="px-5 py-3.5 font-extrabold">Jam Normal</th>
                         <th className="px-5 py-3.5 font-extrabold">Antar &gt; 21.00</th>
                         <th className="px-5 py-3.5 font-extrabold">Jemput &gt; 22.00</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody className="divide-y divide-slate-200">
                       {filteredZones.length > 0 ? (
                         filteredZones.map((zone) => (
                           <tr
                             key={zone.id}
                             onClick={() => setSelectedZoneId(zone.id)}
-                            className={`cursor-pointer transition-colors ${
+                            className={`cursor-pointer transition-colors divide-x divide-slate-200 ${
                               selectedZoneId === zone.id ? "bg-amber-50/80" : "hover:bg-slate-50"
                             }`}>
                             <td className="px-5 py-3.5">

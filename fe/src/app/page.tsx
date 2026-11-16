@@ -659,28 +659,51 @@ Mohon konfirmasi ketersediaan jadwal & prosedurnya.`;
         </div>
       </section>
 
-      {/* ================= PARTNER SECTION ================= */}
-      <section id="partner" className="py-16 bg-white border-t border-slate-200 scroll-mt-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-          <div className="text-center max-w-2xl mx-auto space-y-2">
+      {/* ================= PARTNER SECTION (PERSIS JEJAKIN) ================= */}
+      <section id="partner" className="py-14 sm:py-16 bg-white border-t border-slate-200 scroll-mt-24 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-3">
+          <div className="text-center max-w-2xl mx-auto space-y-1.5">
             <span className="text-xs font-bold text-amber-600 uppercase tracking-wider">MITRA BERPENGALAMAN</span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">Partner & Pelanggan Perusahaan</h2>
-            <p className="text-xs text-slate-500">Telah dipercaya oleh berbagai instansi dan perusahaan terkemuka.</p>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Partner & Pelanggan Perusahaan</h2>
+            <p className="text-xs sm:text-sm text-slate-500">Telah dipercaya oleh berbagai instansi dan perusahaan terkemuka.</p>
           </div>
+        </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 items-center justify-center">
-            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-center font-bold text-slate-700">
-              PT Surya Logistik
-            </div>
-            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-center font-bold text-slate-700">
-              Mandiri Travel
-            </div>
-            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-center font-bold text-slate-700">
-              Auto2000 Cilandak
-            </div>
-            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-center font-bold text-slate-700">
-              PT Indonesia Maju
-            </div>
+        {/* Marquee Ticker Container dengan Efek Fade / Blur di Ujung Kiri & Kanan */}
+        <div className="relative w-full overflow-hidden mt-8 py-4">
+          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-24 sm:w-48 bg-gradient-to-r from-white via-white/80 to-transparent z-10" />
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-24 sm:w-48 bg-gradient-to-l from-white via-white/80 to-transparent z-10" />
+
+          <div className="flex w-max animate-marquee gap-10 sm:gap-14 items-center hover:[animation-play-state:paused]">
+            {[
+              { name: "PT Surya Logistik", icon: "local_shipping" },
+              { name: "Mandiri Travel", icon: "flight_takeoff" },
+              { name: "Auto2000 Cilandak", icon: "car_repair" },
+              { name: "PT Indonesia Maju", icon: "apartment" },
+              { name: "Nusantara Event", icon: "celebration" },
+              { name: "Klinik Sehat Sentosa", icon: "health_and_safety" },
+              { name: "Bank Central Asia", icon: "account_balance" },
+              { name: "Telkom Indonesia", icon: "cell_tower" },
+              { name: "PT Surya Logistik", icon: "local_shipping" },
+              { name: "Mandiri Travel", icon: "flight_takeoff" },
+              { name: "Auto2000 Cilandak", icon: "car_repair" },
+              { name: "PT Indonesia Maju", icon: "apartment" },
+              { name: "Nusantara Event", icon: "celebration" },
+              { name: "Klinik Sehat Sentosa", icon: "health_and_safety" },
+              { name: "Bank Central Asia", icon: "account_balance" },
+              { name: "Telkom Indonesia", icon: "cell_tower" },
+            ].map((p, idx) => (
+              <div
+                key={idx}
+                className="flex items-center gap-3 shrink-0 opacity-60 hover:opacity-100 transition-all duration-300 cursor-pointer group">
+                <div className="w-10 h-10 rounded-xl bg-slate-100 group-hover:bg-amber-50 border border-slate-200/80 group-hover:border-amber-300 flex items-center justify-center text-slate-600 group-hover:text-amber-600 transition-colors shadow-2xs">
+                  <span className="material-symbols-outlined text-[22px]">{p.icon}</span>
+                </div>
+                <span className="font-extrabold text-sm sm:text-base text-slate-800 group-hover:text-slate-900 tracking-tight whitespace-nowrap">
+                  {p.name}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
       </section>

@@ -9,39 +9,35 @@ import Footer from "@/components/Footer";
 const CORPORATE_PARTNERS = [
   {
     name: "PT Surya Logistik",
-    sector: "Logistik & Distribusi",
-    cooperation: "Sewa Operasional Bulanan (MPV & Niaga)",
-    since: "2023",
+    icon: "local_shipping",
   },
   {
     name: "Mandiri Travel",
-    sector: "Biro Perjalanan & Wisata",
-    cooperation: "Dukungan Armada HiAce & Pariwisata",
-    since: "2022",
+    icon: "flight_takeoff",
   },
   {
     name: "Auto2000 Cilandak",
-    sector: "Otomotif & Bengkel Resmi",
-    cooperation: "Mitra Perawatan Berkala & Suku Cadang",
-    since: "2021",
+    icon: "car_repair",
   },
   {
     name: "PT Indonesia Maju",
-    sector: "Kontraktor & Infrastruktur",
-    cooperation: "Kontrak Kendaraan Proyek & Dinas Lapangan",
-    since: "2024",
+    icon: "apartment",
   },
   {
-    name: "Nusantara Event Organizer",
-    sector: "MICE & Event Korporat",
-    cooperation: "Drop-off VIP, Tamu Negara & Crew",
-    since: "2023",
+    name: "Nusantara Event",
+    icon: "celebration",
   },
   {
     name: "Klinik Sehat Sentosa",
-    sector: "Layanan Kesehatan",
-    cooperation: "Transportasi Operasional Tim Medis",
-    since: "2024",
+    icon: "health_and_safety",
+  },
+  {
+    name: "Bank Central Asia",
+    icon: "account_balance",
+  },
+  {
+    name: "Telkom Indonesia",
+    icon: "cell_tower",
   },
 ];
 
@@ -203,32 +199,40 @@ Mohon informasi jadwal diskusi lebih lanjut. Terima kasih.`;
         </div>
       </section>
 
-      {/* ================= DAFTAR PARTNER & PELANGGAN PERUSAHAAN ================= */}
-      <section className="py-16 bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
-          <div className="text-center max-w-2xl mx-auto space-y-2">
+      {/* ================= DAFTAR PARTNER & PELANGGAN PERUSAHAAN (PERSIS JEJAKIN) ================= */}
+      <section className="py-14 sm:py-16 bg-white border-b border-slate-200 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-3">
+          <div className="text-center max-w-2xl mx-auto space-y-1.5">
             <span className="text-xs font-bold text-amber-600 uppercase tracking-wider">MITRA BERPENGALAMAN</span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">Partner & Pelanggan Perusahaan</h2>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              Partner & Pelanggan Perusahaan
+            </h2>
             <p className="text-xs sm:text-sm text-slate-500">
               Telah dipercaya oleh berbagai instansi, bengkel resmi, dan perusahaan terkemuka.
             </p>
           </div>
+        </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {CORPORATE_PARTNERS.map((partner, idx) => (
+        {/* Marquee Ticker Container dengan Efek Fade / Blur di Ujung Kiri & Kanan */}
+        <div className="relative w-full overflow-hidden mt-8 py-4">
+          {/* Efek Blur Fade Kiri */}
+          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-24 sm:w-48 bg-gradient-to-r from-white via-white/80 to-transparent z-10" />
+
+          {/* Efek Blur Fade Kanan */}
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-24 sm:w-48 bg-gradient-to-l from-white via-white/80 to-transparent z-10" />
+
+          {/* Marquee Track Berjalan Tanpa Card (Logo + Nama Bersih) */}
+          <div className="flex w-max animate-marquee gap-10 sm:gap-14 items-center hover:[animation-play-state:paused]">
+            {[...CORPORATE_PARTNERS, ...CORPORATE_PARTNERS, ...CORPORATE_PARTNERS].map((partner, idx) => (
               <div
                 key={idx}
-                className="p-5 bg-slate-50 rounded-2xl border border-slate-200/90 flex flex-col justify-between space-y-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <h3 className="font-extrabold text-base text-slate-900">{partner.name}</h3>
-                    <span className="text-xs font-semibold text-amber-700">{partner.sector}</span>
-                  </div>
-                  <span className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-[11px] font-bold text-slate-600 shrink-0">
-                    Sejak {partner.since}
-                  </span>
+                className="flex items-center gap-3 shrink-0 opacity-60 hover:opacity-100 transition-all duration-300 cursor-pointer group">
+                <div className="w-10 h-10 rounded-xl bg-slate-100 group-hover:bg-amber-50 border border-slate-200/80 group-hover:border-amber-300 flex items-center justify-center text-slate-600 group-hover:text-amber-600 transition-colors shadow-2xs">
+                  <span className="material-symbols-outlined text-[22px]">{partner.icon}</span>
                 </div>
-                <p className="text-xs text-slate-600 pt-2 border-t border-slate-200/70">{partner.cooperation}</p>
+                <span className="font-extrabold text-sm sm:text-base text-slate-800 group-hover:text-slate-900 tracking-tight whitespace-nowrap">
+                  {partner.name}
+                </span>
               </div>
             ))}
           </div>
