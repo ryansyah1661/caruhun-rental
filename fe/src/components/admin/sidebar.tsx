@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { type Role } from "@/lib/auth";
 import { useMe } from "@/lib/use-me";
-import { api, TOKEN_KEY } from "@/lib/api";
 
 export type MenuItem = { href: string; label: string; icon: string; roles: Role[]; section?: string };
 
@@ -59,20 +58,10 @@ interface AdminSidebarProps {
 
 export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
-  const router = useRouter();
   const { data: me, isLoading } = useMe();
 
   const items = me ? ADMIN_MENU.filter((m) => m.roles.includes(me.role)) : [];
   const sections = Array.from(new Set(items.map((i) => i.section || "LAINNYA")));
-
-  const handleLogout = async () => {
-    try {
-      await api.post("/logout");
-    } catch {}
-    localStorage.removeItem(TOKEN_KEY);
-    document.cookie = `${TOKEN_KEY}=; path=/; max-age=0;`;
-    router.replace("/login");
-  };
 
   return (
     <>
@@ -82,7 +71,8 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
         className={`fixed inset-y-0 left-0 w-64 bg-slate-900 z-50 flex flex-col justify-between overflow-y-auto transition-transform duration-200 ease-in-out border-r border-slate-800 ${
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}>
-        <div className="flex flex-col min-h-0 flex-1 pb-4">
+        <div className="flex flex-col min-h-0 flex-1 pb-6">
+          {/* Brand Header */}
           <div className="h-16 px-4 flex items-center gap-3 bg-slate-900 shrink-0 border-b border-slate-800">
             <img alt="Caruhun Logo" className="h-8 w-auto object-contain" src="/images/logo.png" />
             <div className="flex flex-col overflow-hidden">
@@ -93,6 +83,7 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
             </div>
           </div>
 
+          {/* Nav Items */}
           <nav className="flex-1 px-3 space-y-5 overflow-y-auto mt-4">
             {sections.map((sectionName) => {
               const sectionItems = items.filter((i) => (i.section || "LAINNYA") === sectionName);
@@ -131,16 +122,6 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
               );
             })}
           </nav>
-        </div>
-
-        <div className="p-3 border-t border-slate-800 bg-slate-900/60">
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="w-full h-10 px-3 rounded-xl bg-slate-800/80 hover:bg-rose-900/40 text-slate-300 hover:text-rose-400 font-bold text-xs flex items-center gap-2.5 transition-colors cursor-pointer">
-            <span className="material-symbols-outlined text-[18px]">logout</span>
-            <span>Keluar Akun</span>
-          </button>
         </div>
       </aside>
     </>

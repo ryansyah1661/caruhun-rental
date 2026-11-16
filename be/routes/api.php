@@ -26,6 +26,7 @@ Route::prefix('public')->group(function () {
 // Route Admin (Terproteksi Sanctum)
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
+    Route::put('/profile', [AuthController::class, 'updateProfile']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index']);

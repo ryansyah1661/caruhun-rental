@@ -166,39 +166,41 @@ export default function Dashboard() {
           </div>
 
           <div className="overflow-x-auto rounded-xl border border-slate-200">
-            <table className="w-full text-left text-xs divide-y divide-slate-200">
-              <thead className="bg-slate-50 text-slate-600 font-bold uppercase h-10">
-                <tr>
-                  <th className="px-4 py-3">Kendaraan</th>
-                  <th className="px-4 py-3">Plat Nomor</th>
-                  <th className="px-4 py-3">Kategori & Transmisi</th>
-                  <th className="px-4 py-3">Kilometer</th>
+            <table className="w-full text-left border-collapse text-xs divide-y divide-slate-200">
+              <thead className="bg-slate-50 text-slate-600 font-bold uppercase h-11">
+                <tr className="divide-x divide-slate-200">
+                  <th className="px-4 py-3 text-center">Kendaraan</th>
+                  <th className="px-4 py-3 text-center">Plat Nomor</th>
+                  <th className="px-4 py-3 text-center">Kategori & Transmisi</th>
+                  <th className="px-4 py-3 text-center">Kilometer</th>
                   <th className="px-4 py-3 text-center">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 text-slate-700">
                 {filteredFleet.length > 0 ? (
                   filteredFleet.map((v) => (
-                    <tr key={v.id} className="hover:bg-slate-50/80">
+                    <tr key={v.id} className="hover:bg-slate-50/80 transition-colors divide-x divide-slate-200">
                       <td className="px-4 py-3.5 font-bold text-slate-900">{v.name}</td>
                       <td className="px-4 py-3.5 font-mono text-slate-500">{v.nopol}</td>
                       <td className="px-4 py-3.5">
                         {v.category} &bull; {v.transmission}
                       </td>
                       <td className="px-4 py-3.5 font-semibold">{v.odometer}</td>
-                      <td className="px-4 py-3.5 text-center">
-                        <span
-                          className={`px-2.5 py-1 rounded-full text-[11px] font-bold border ${
-                            v.status === "Tersedia"
-                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                              : v.status === "Disewa"
-                                ? "bg-sky-50 text-sky-700 border-sky-200"
-                                : v.status === "Dipesan"
-                                  ? "bg-amber-50 text-amber-700 border-amber-200"
-                                  : "bg-rose-50 text-rose-700 border-rose-200"
-                          }`}>
-                          {v.status}
-                        </span>
+                      <td className="px-4 py-3.5">
+                        <div className="flex justify-center">
+                          <span
+                            className={`px-2.5 py-1 rounded-full text-[11px] font-bold border ${
+                              v.status === "Tersedia"
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                : v.status === "Disewa"
+                                  ? "bg-sky-50 text-sky-700 border-sky-200"
+                                  : v.status === "Dipesan"
+                                    ? "bg-amber-50 text-amber-700 border-amber-200"
+                                    : "bg-rose-50 text-rose-700 border-rose-200"
+                            }`}>
+                            {v.status}
+                          </span>
+                        </div>
                       </td>
                     </tr>
                   ))
