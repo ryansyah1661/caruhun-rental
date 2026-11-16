@@ -12,6 +12,8 @@ use App\Http\Controllers\Api\AdminVehicleController;
 use App\Http\Controllers\Api\AdminCustomerController;
 use App\Http\Controllers\Api\AdminInspectionController;
 use App\Http\Controllers\Api\AdminClaimController;
+use App\Http\Controllers\Api\AdminUserController;
+use App\Http\Controllers\Api\AdminAttendanceController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/ping', fn() => ['ok' => true]);
@@ -35,15 +37,26 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/admin/arrivals', [AdminArrivalController::class, 'index']);
     Route::get('/admin/rentals', [AdminRentalHistoryController::class, 'index']);
 
-    // Kendaraan (Index, Update, Destroy)
+    // Kendaraan
     Route::get('/admin/vehicles', [AdminVehicleController::class, 'index']);
     Route::put('/admin/vehicles/{id}', [AdminVehicleController::class, 'update']);
     Route::delete('/admin/vehicles/{id}', [AdminVehicleController::class, 'destroy']);
 
-    // Pelanggan (Index, Update, Destroy)
+    // Pelanggan
     Route::get('/admin/customers', [AdminCustomerController::class, 'index']);
     Route::put('/admin/customers/{id}', [AdminCustomerController::class, 'update']);
     Route::delete('/admin/customers/{id}', [AdminCustomerController::class, 'destroy']);
+
+    // Manajemen Pengguna (User CRUD)
+    Route::get('/admin/users', [AdminUserController::class, 'index']);
+    Route::post('/admin/users', [AdminUserController::class, 'store']);
+    Route::put('/admin/users/{id}', [AdminUserController::class, 'update']);
+    Route::delete('/admin/users/{id}', [AdminUserController::class, 'destroy']);
+
+    // Kehadiran (Attendance)
+    Route::get('/admin/attendances', [AdminAttendanceController::class, 'index']);
+    Route::post('/admin/attendances', [AdminAttendanceController::class, 'store']);
+    Route::put('/admin/attendances/{id}/clock-out', [AdminAttendanceController::class, 'clockOut']);
 
     Route::get('/admin/inspections', [AdminInspectionController::class, 'index']);
     Route::get('/admin/claims', [AdminClaimController::class, 'index']);

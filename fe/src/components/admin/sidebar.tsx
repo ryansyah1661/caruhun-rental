@@ -34,6 +34,13 @@ export const ADMIN_MENU: MenuItem[] = [
 
   // Grup 3: Manajemen & Website
   {
+    href: "/admin/users",
+    label: "Kelola Pengguna",
+    icon: "manage_accounts",
+    roles: SUPER_ONLY,
+    section: "MANAJEMEN & WEBSITE",
+  },
+  {
     href: "/admin/finance",
     label: "Keuangan",
     icon: "account_balance_wallet",
@@ -72,7 +79,6 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}>
         <div className="flex flex-col min-h-0 flex-1 pb-6">
-          {/* Brand Header */}
           <div className="h-16 px-4 flex items-center gap-3 bg-slate-900 shrink-0 border-b border-slate-800">
             <img alt="Caruhun Logo" className="h-8 w-auto object-contain" src="/images/logo.png" />
             <div className="flex flex-col overflow-hidden">
@@ -83,7 +89,6 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
             </div>
           </div>
 
-          {/* Nav Items */}
           <nav className="flex-1 px-3 space-y-5 overflow-y-auto mt-4">
             {sections.map((sectionName) => {
               const sectionItems = items.filter((i) => (i.section || "LAINNYA") === sectionName);

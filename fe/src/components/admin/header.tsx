@@ -112,11 +112,6 @@ export default function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
 
         {/* Info Tanggal & Dropdown Profil Kanan Atas */}
         <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">
-            <span className="material-symbols-outlined text-[16px] text-amber-600">calendar_today</span>
-            <span>{currentDate}</span>
-          </div>
-
           {/* User Profile Dropdown Button */}
           {isLoading || !me ? (
             <div className="flex items-center gap-2 pl-2 animate-pulse">
@@ -170,7 +165,7 @@ export default function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
                       onClick={handleOpenEdit}
                       className="w-full px-3 py-2.5 rounded-xl text-left text-xs font-semibold text-slate-700 hover:text-amber-800 hover:bg-amber-50 transition-colors flex items-center gap-2.5 cursor-pointer">
                       <span className="material-symbols-outlined text-[18px] text-slate-400">manage_accounts</span>
-                      <span>Ganti Profil & Akun</span>
+                      <span>Profile</span>
                     </button>
                   </div>
 
