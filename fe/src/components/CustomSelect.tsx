@@ -9,13 +9,20 @@ export interface SelectOption {
 }
 
 interface CustomSelectProps {
+  label?: string;
   value: string;
   onChange: (val: string) => void;
   options: SelectOption[];
   placeholder?: string;
 }
 
-export default function CustomSelect({ value, onChange, options, placeholder = "Pilih opsi" }: CustomSelectProps) {
+export default function CustomSelect({
+  label,
+  value,
+  onChange,
+  options,
+  placeholder = "Pilih opsi",
+}: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -38,7 +45,9 @@ export default function CustomSelect({ value, onChange, options, placeholder = "
 
   return (
     <div ref={containerRef} className="relative">
-      {/* Trigger Box (Seragam dengan CustomTimePicker) */}
+      {label && <label className="block text-xs font-bold text-slate-700 mb-1">{label}</label>}
+
+      {/* Trigger Box */}
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}

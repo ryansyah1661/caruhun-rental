@@ -31,7 +31,11 @@ export default function LoginPage() {
     setError(null);
     try {
       const { data } = await api.post<{ token: string }>("/login", values);
+
+      // Simpan di localStorage dan Cookie untuk middleware
       localStorage.setItem(TOKEN_KEY, data.token);
+      document.cookie = `${TOKEN_KEY}=${data.token}; path=/; max-age=604800; SameSite=Lax`;
+
       qc.clear();
       router.replace("/admin");
     } catch (e) {
@@ -48,9 +52,8 @@ export default function LoginPage() {
       {/* Background Glow Effect */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-amber-600/10 rounded-full blur-3xl pointer-events-none" />
 
-      {/* ================= SINGLE UNIFIED CARD ================= */}
+      {/* Card Form Login */}
       <div className="relative z-10 w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-100 p-8 sm:p-10 flex flex-col justify-between my-auto">
-        {/* Header Logo & Branding */}
         <div className="flex flex-col items-center text-center space-y-2.5 pb-6 border-b border-slate-100">
           <img src="/images/logo.png" alt="Caruhun Trans Logo" className="w-14 h-14 object-contain" />
           <div>
@@ -61,7 +64,6 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Form Section */}
         <div className="py-6 space-y-5">
           {error && (
             <div className="rounded-xl bg-rose-50 border border-rose-200 p-3.5 text-xs font-semibold text-rose-700 flex items-center gap-2.5">
@@ -71,7 +73,6 @@ export default function LoginPage() {
           )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {/* Email Input */}
             <div className="space-y-1.5">
               <label className="block text-xs font-bold text-slate-700">Alamat Email</label>
               <input
@@ -84,13 +85,9 @@ export default function LoginPage() {
               {errors.email && <p className="text-[11px] font-semibold text-rose-600 mt-1">{errors.email.message}</p>}
             </div>
 
-            {/* Password Input */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-bold text-slate-700">Kata Sandi</label>
-                <a href="#" className="text-xs font-bold text-amber-600 hover:text-amber-700">
-                  Lupa kata sandi?
-                </a>
               </div>
               <div className="relative">
                 <input
@@ -103,7 +100,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 focus:outline-none cursor-pointer flex items-center">
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer">
                   <span className="material-symbols-outlined text-[18px]">
                     {showPassword ? "visibility_off" : "visibility"}
                   </span>
@@ -114,26 +111,27 @@ export default function LoginPage() {
               )}
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-11 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-amber-600/20 transition-all active:scale-[0.98] disabled:opacity-60 cursor-pointer pt-0.5 mt-2">
+              className="w-full h-12 rounded-xl bg-amber-600 hover:bg-amber-700 active:scale-[0.99] text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50">
               {isSubmitting ? (
                 <>
-                  <span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   <span>Memproses...</span>
                 </>
               ) : (
-                <span>Masuk</span>
+                <>
+                  <span>Masuk ke Dashboard</span>
+                  <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                </>
               )}
             </button>
           </form>
         </div>
 
-        {/* Footer Info */}
-        <div className="pt-4 border-t border-slate-100 text-center text-[10px] text-slate-400 font-medium">
-          &copy; {new Date().getFullYear()} PT. Caruhun Trans. All rights reserved.
+        <div className="pt-4 border-t border-slate-100 text-center">
+          <p className="text-[11px] text-slate-400">Akses internal Caruhun Trans &bull; Sistem Terlindungi</p>
         </div>
       </div>
     </div>

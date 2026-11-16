@@ -18,7 +18,6 @@ class AdminVehicleController extends Controller
             'maintenance' => 'Servis',
         ];
 
-        // 1. Ambil data armada master dari PostgreSQL
         $vehicles = Vehicle::latest()->get()->map(function ($v) use ($statusMap) {
             return [
                 'id' => (string) $v->id,
@@ -28,6 +27,7 @@ class AdminVehicleController extends Controller
                 'transmission' => ucfirst($v->transmission ?? 'Matic'),
                 'year' => (int) ($v->year ?? 2023),
                 'status' => $statusMap[$v->status] ?? 'Tersedia',
+                'daily_price' => (int) ($v->daily_price ?? 0),
                 'odometer' => $v->odometer ?? '0 km',
             ];
         });
@@ -35,6 +35,46 @@ class AdminVehicleController extends Controller
         return response()->json([
             'vehicles' => $vehicles,
             'total' => $vehicles->count(),
+        ]);
+    }
+
+    public function update(Request $request, string $id): JsonResponse
+    {
+        $vehicle = Vehicle::findOrFail($id);
+        $data = $request->validate([
+            'status' => 'nullable|string',
+            'daily_price' => 'nullable|numeric',
+        ]);
+
+        if (!empty($data['status'])) {
+            $reverseMap = [
+                'Tersedia' => 'available',
+                'Disewa' => 'rented',
+                'Dipesan' => 'booked',
+                'Servis' => 'maintenance',
+            ];
+            $vehicle->status = $reverseMap[$data['status']] ?? strtolower($data['status']);
+        }
+
+        if (isset($data['daily_price'])) {
+            $vehicle->daily_price = (int) $data['daily_price'];
+        }
+
+        $vehicle->save();
+
+        return response()->json([
+            'message' => 'Data armada berhasil diperbarui.',
+            'vehicle' => $vehicle,
+        ]);
+    }
+
+    public function destroy(string $id): JsonResponse
+    {
+        $vehicle = Vehicle::findOrFail($id);
+        $vehicle->delete(); // Soft delete aman
+
+        return response()->json([
+            'message' => 'Armada berhasil dihapus.',
         ]);
     }
 }

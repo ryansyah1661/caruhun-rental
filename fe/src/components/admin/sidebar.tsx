@@ -1,22 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { type Role } from "@/lib/auth";
 import { useMe } from "@/lib/use-me";
+import { api, TOKEN_KEY } from "@/lib/api";
 
 export type MenuItem = { href: string; label: string; icon: string; roles: Role[]; section?: string };
 
-const ALL: Role[] = ["admin", "office_staff", "field_staff"];
-const OFFICE: Role[] = ["admin", "office_staff"];
-const FIELD: Role[] = ["admin", "office_staff", "field_staff"];
+const ALL: Role[] = ["superadmin", "admin", "petugas"];
+const OFFICE: Role[] = ["superadmin", "admin"];
+const SUPER_ONLY: Role[] = ["superadmin"];
 
 export const ADMIN_MENU: MenuItem[] = [
   // Grup 1: Operasional
   { href: "/admin", label: "Dashboard", icon: "dashboard", roles: OFFICE, section: "OPERASIONAL" },
   { href: "/admin/bookings", label: "Booking", icon: "book_online", roles: OFFICE, section: "OPERASIONAL" },
-  { href: "/admin/departures", label: "Keberangkatan", icon: "departure_board", roles: FIELD, section: "OPERASIONAL" },
-  { href: "/admin/arrivals", label: "Kedatangan", icon: "assignment_turned_in", roles: FIELD, section: "OPERASIONAL" },
+  { href: "/admin/departures", label: "Keberangkatan", icon: "departure_board", roles: ALL, section: "OPERASIONAL" },
+  { href: "/admin/arrivals", label: "Kedatangan", icon: "assignment_turned_in", roles: ALL, section: "OPERASIONAL" },
   { href: "/admin/rentals", label: "Riwayat Sewa", icon: "history", roles: OFFICE, section: "OPERASIONAL" },
 
   // Grup 2: Armada & Lapangan
@@ -30,17 +31,17 @@ export const ADMIN_MENU: MenuItem[] = [
     roles: ALL,
     section: "ARMADA & LAPANGAN",
   },
-  { href: "/admin/claims", label: "Kerusakan & Klaim", icon: "car_crash", roles: FIELD, section: "ARMADA & LAPANGAN" },
+  { href: "/admin/claims", label: "Kerusakan & Klaim", icon: "car_crash", roles: ALL, section: "ARMADA & LAPANGAN" },
 
   // Grup 3: Manajemen & Website
   {
     href: "/admin/finance",
     label: "Keuangan",
     icon: "account_balance_wallet",
-    roles: ["admin"],
+    roles: SUPER_ONLY,
     section: "MANAJEMEN & WEBSITE",
   },
-  { href: "/admin/reports", label: "Laporan", icon: "bar_chart", roles: ["admin"], section: "MANAJEMEN & WEBSITE" },
+  { href: "/admin/reports", label: "Laporan", icon: "bar_chart", roles: SUPER_ONLY, section: "MANAJEMEN & WEBSITE" },
   {
     href: "/admin/documents",
     label: "Dokumen Rental",
@@ -48,7 +49,7 @@ export const ADMIN_MENU: MenuItem[] = [
     roles: OFFICE,
     section: "MANAJEMEN & WEBSITE",
   },
-  { href: "/admin/konten", label: "Konten Website", icon: "web", roles: ["admin"], section: "MANAJEMEN & WEBSITE" },
+  { href: "/admin/konten", label: "Konten Website", icon: "web", roles: SUPER_ONLY, section: "MANAJEMEN & WEBSITE" },
 ];
 
 interface AdminSidebarProps {
@@ -56,129 +57,93 @@ interface AdminSidebarProps {
   onClose: () => void;
 }
 
-function SidebarSkeleton() {
-  return (
-    <div className="flex-1 px-3 space-y-6 mt-2 animate-pulse overflow-hidden">
-      {/* Seksi 1: OPERASIONAL */}
-      <div className="space-y-1.5">
-        <div className="px-3 pb-1.5">
-          <div className="h-2 w-20 bg-stone-700/60 rounded-full" />
-        </div>
-        <div className="space-y-1">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-10 px-3 py-2 rounded-xl flex items-center gap-3 bg-stone-800/40">
-              <div className="w-5 h-5 rounded-lg bg-stone-700/50 shrink-0" />
-              <div className="h-3 rounded-full bg-stone-700/40" style={{ width: `${55 + (i % 3) * 15}%` }} />
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Seksi 2: ARMADA & LAPANGAN */}
-      <div className="space-y-1.5">
-        <div className="px-3 pb-1.5">
-          <div className="h-2 w-28 bg-stone-700/60 rounded-full" />
-        </div>
-        <div className="space-y-1">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-10 px-3 py-2 rounded-xl flex items-center gap-3 bg-stone-800/40">
-              <div className="w-5 h-5 rounded-lg bg-stone-700/50 shrink-0" />
-              <div className="h-3 rounded-full bg-stone-700/40" style={{ width: `${50 + (i % 2) * 20}%` }} />
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Seksi 3: MANAJEMEN & WEBSITE */}
-      <div className="space-y-1.5">
-        <div className="px-3 pb-1.5">
-          <div className="h-2 w-32 bg-stone-700/60 rounded-full" />
-        </div>
-        <div className="space-y-1">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-10 px-3 py-2 rounded-xl flex items-center gap-3 bg-stone-800/40">
-              <div className="w-5 h-5 rounded-lg bg-stone-700/50 shrink-0" />
-              <div className="h-3 rounded-full bg-stone-700/40" style={{ width: `${60 + (i % 3) * 12}%` }} />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const { data: me, isLoading } = useMe();
 
   const items = me ? ADMIN_MENU.filter((m) => m.roles.includes(me.role)) : [];
   const sections = Array.from(new Set(items.map((i) => i.section || "LAINNYA")));
 
+  const handleLogout = async () => {
+    try {
+      await api.post("/logout");
+    } catch {}
+    localStorage.removeItem(TOKEN_KEY);
+    document.cookie = `${TOKEN_KEY}=; path=/; max-age=0;`;
+    router.replace("/login");
+  };
+
   return (
     <>
-      {/* Sidebar Overlay (Mobile) */}
       {isOpen && <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={onClose} />}
 
-      {/* Sidebar Navigasi */}
       <aside
-        className={`fixed inset-y-0 left-0 w-64 bg-inverse-surface z-50 flex flex-col justify-between overflow-y-auto transition-transform duration-200 ease-in-out shadow-[0_1px_8px_rgba(0,0,0,0.15)] ${
+        className={`fixed inset-y-0 left-0 w-64 bg-slate-900 z-50 flex flex-col justify-between overflow-y-auto transition-transform duration-200 ease-in-out border-r border-slate-800 ${
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}>
-        <div className="flex flex-col min-h-0 flex-1 pb-6">
+        <div className="flex flex-col min-h-0 flex-1 pb-4">
           {/* Brand Header */}
-          <div className="h-16 px-4 flex items-center gap-3 bg-inverse-surface shrink-0">
+          <div className="h-16 px-4 flex items-center gap-3 bg-slate-900 shrink-0 border-b border-slate-800">
             <img alt="Caruhun Logo" className="h-8 w-auto object-contain" src="/images/logo.png" />
             <div className="flex flex-col overflow-hidden">
-              <span className="text-base font-bold text-white leading-none tracking-tight">Caruhun</span>
+              <span className="text-sm font-extrabold text-white leading-none tracking-tight">Caruhun Trans</span>
               <span className="text-[10px] font-bold text-amber-500 uppercase tracking-wider mt-1">
                 Management System
               </span>
             </div>
           </div>
 
-          {/* Nav Items Berdasarkan Grup / Section atau Skeleton saat loading */}
-          {isLoading || !me ? (
-            <SidebarSkeleton />
-          ) : (
-            <nav className="flex-1 px-3 space-y-6 overflow-y-auto mt-2">
-              {sections.map((sectionName) => {
-                const sectionItems = items.filter((i) => (i.section || "LAINNYA") === sectionName);
-                if (sectionItems.length === 0) return null;
+          {/* Nav Items */}
+          <nav className="flex-1 px-3 space-y-5 overflow-y-auto mt-4">
+            {sections.map((sectionName) => {
+              const sectionItems = items.filter((i) => (i.section || "LAINNYA") === sectionName);
+              if (sectionItems.length === 0) return null;
 
-                return (
-                  <div key={sectionName} className="space-y-1">
-                    <div className="px-3 pb-1.5 flex items-center justify-between">
-                      <span className="text-[10px] font-extrabold text-stone-400 uppercase tracking-widest">
-                        {sectionName}
-                      </span>
-                    </div>
-
-                    {sectionItems.map((m) => {
-                      const active =
-                        m.href === "/admin"
-                          ? pathname === "/admin"
-                          : pathname === m.href || pathname.startsWith(`${m.href}/`);
-
-                      return (
-                        <Link
-                          key={m.href}
-                          href={m.href}
-                          onClick={onClose}
-                          className={`min-h-[40px] px-3 py-2 rounded-xl flex items-center gap-3 text-xs transition-colors ${
-                            active
-                              ? "bg-amber-600 text-white font-extrabold shadow-xs"
-                              : "font-medium text-stone-300 hover:text-white hover:bg-stone-800/60"
-                          }`}>
-                          <span className="material-symbols-outlined text-[18px]">{m.icon}</span>
-                          <span>{m.label}</span>
-                        </Link>
-                      );
-                    })}
+              return (
+                <div key={sectionName} className="space-y-1">
+                  <div className="px-3 pb-1 flex items-center justify-between">
+                    <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
+                      {sectionName}
+                    </span>
                   </div>
-                );
-              })}
-            </nav>
-          )}
+
+                  {sectionItems.map((m) => {
+                    const active =
+                      m.href === "/admin"
+                        ? pathname === "/admin"
+                        : pathname === m.href || pathname.startsWith(`${m.href}/`);
+
+                    return (
+                      <Link
+                        key={m.href}
+                        href={m.href}
+                        onClick={onClose}
+                        className={`min-h-[38px] px-3 py-2 rounded-xl flex items-center gap-3 text-xs transition-colors ${
+                          active
+                            ? "bg-amber-600 text-white font-extrabold shadow-sm"
+                            : "font-semibold text-slate-300 hover:text-white hover:bg-slate-800/80"
+                        }`}>
+                        <span className="material-symbols-outlined text-[18px]">{m.icon}</span>
+                        <span>{m.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </nav>
+        </div>
+
+        {/* Tombol Logout di Bawah Sidebar */}
+        <div className="p-3 border-t border-slate-800 bg-slate-900/60">
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="w-full h-10 px-3 rounded-xl bg-slate-800/80 hover:bg-rose-900/40 text-slate-300 hover:text-rose-400 font-bold text-xs flex items-center gap-2.5 transition-colors cursor-pointer">
+            <span className="material-symbols-outlined text-[18px]">logout</span>
+            <span>Keluar Akun</span>
+          </button>
         </div>
       </aside>
     </>

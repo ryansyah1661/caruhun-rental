@@ -7,132 +7,9 @@ import CustomTimePicker from "@/components/CustomTimePicker";
 import CustomDurationPicker from "@/components/CustomDurationPicker";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { useCatalog, CatalogVehicle, CategoryFilter } from "@/lib/use-catalog";
 
-type CategoryFilter = "semua" | "mpv" | "city" | "suv" | "minibus";
 type ServicePackage = "lepas-kunci" | "dengan-driver" | "bandara";
-
-interface BookedSlot {
-  startDate: string; // Format: YYYY-MM-DD
-  endDate: string; // Format: YYYY-MM-DD
-}
-
-interface CatalogVehicle {
-  id: string;
-  name: string;
-  category: CategoryFilter;
-  categoryLabel: string;
-  transmission: string;
-  seats: number;
-  fuelType: string;
-  pricePerDay: number;
-  priceWithDriverPerDay: number;
-  image: string;
-  bookedDates: BookedSlot[];
-  details: {
-    year: number;
-    engine: string;
-    description: string;
-    features: string[];
-  };
-}
-
-const CATALOG_VEHICLES: CatalogVehicle[] = [
-  {
-    id: "1",
-    name: "Toyota Avanza 1.5 G",
-    category: "mpv",
-    categoryLabel: "MPV / Keluarga",
-    transmission: "Automatic (CVT)",
-    seats: 7,
-    fuelType: "Bensin",
-    pricePerDay: 450000,
-    priceWithDriverPerDay: 650000,
-    image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?q=80&w=800&auto=format&fit=crop",
-    bookedDates: [{ startDate: "2026-11-15", endDate: "2026-11-17" }],
-    details: {
-      year: 2023,
-      engine: "1.500 cc Dual VVT-i",
-      description: "Mobil keluarga favorit dengan kabin luas, irit bensin, dan AC dingin double blower.",
-      features: ["AC Double Blower", "Bluetooth Audio", "Sensor Parkir", "Kamera Mundur"],
-    },
-  },
-  {
-    id: "2",
-    name: "Toyota Innova Zenix 2.0 V",
-    category: "mpv",
-    categoryLabel: "Premium MPV",
-    transmission: "Automatic",
-    seats: 7,
-    fuelType: "Bensin",
-    pricePerDay: 800000,
-    priceWithDriverPerDay: 1000000,
-    image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=800&auto=format&fit=crop",
-    bookedDates: [],
-    details: {
-      year: 2024,
-      engine: "2.000 cc Dynamic Force",
-      description: "Performa mumpuni dengan kenyamanan kelas atas untuk dinas kantor maupun liburan keluarga.",
-      features: ["Panoramic Sunroof", "Captain Seat", "Ambient Light", "Power Backdoor"],
-    },
-  },
-  {
-    id: "3",
-    name: "Honda Brio RS Urbanite",
-    category: "city",
-    categoryLabel: "City Car",
-    transmission: "Matic CVT",
-    seats: 5,
-    fuelType: "Bensin",
-    pricePerDay: 350000,
-    priceWithDriverPerDay: 550000,
-    image: "https://images.unsplash.com/photo-1590362891991-f776e747a588?q=80&w=800&auto=format&fit=crop",
-    bookedDates: [],
-    details: {
-      year: 2022,
-      engine: "1.200 cc i-VTEC",
-      description: "Lincah di jalan perkotaan, sangat hemat BBM, dan gampang untuk parkir.",
-      features: ["Touchscreen Headunit", "Bodykit RS", "Keyless Entry", "Audio Steering Switch"],
-    },
-  },
-  {
-    id: "4",
-    name: "Mitsubishi Pajero Sport Dakar",
-    category: "suv",
-    categoryLabel: "SUV Tough",
-    transmission: "Automatic 8-Speed",
-    seats: 7,
-    fuelType: "Diesel",
-    pricePerDay: 1200000,
-    priceWithDriverPerDay: 1450000,
-    image: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?q=80&w=800&auto=format&fit=crop",
-    bookedDates: [{ startDate: "2026-11-13", endDate: "2026-11-16" }],
-    details: {
-      year: 2023,
-      engine: "2.400 cc MIVEC Turbo Diesel",
-      description: "SUV tangguh dan mewah siap melibas segala rute perjalanan luar kota.",
-      features: ["Sunroof", "Leather Seat", "Forward Collision Mitigation", "Paddle Shift"],
-    },
-  },
-  {
-    id: "5",
-    name: "Toyota HiAce Commuter",
-    category: "minibus",
-    categoryLabel: "Minibus 16-Seat",
-    transmission: "Manual Diesel",
-    seats: 16,
-    fuelType: "Diesel",
-    pricePerDay: 1300000,
-    priceWithDriverPerDay: 1300000, // Wajib include driver
-    image: "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?q=80&w=800&auto=format&fit=crop",
-    bookedDates: [],
-    details: {
-      year: 2021,
-      engine: "2.500 cc Turbo Diesel",
-      description: "Solusi terbaik untuk rombongan wisata, acara keluarga besar, maupun travel dinas.",
-      features: ["Reclining Seat", "Full AC Microbus", "Colokan Charger Phone", "Bagasi Luas"],
-    },
-  },
-];
 
 const HOW_TO_RENT_STEPS = [
   {
@@ -164,6 +41,7 @@ const HOW_TO_RENT_STEPS = [
 
 export default function Home() {
   const router = useRouter();
+  const { data: vehicles = [], isLoading, isError, refetch } = useCatalog();
 
   // Filter & Search States
   const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>("semua");
@@ -182,7 +60,7 @@ export default function Home() {
   // Modal State
   const [selectedVehicleModal, setSelectedVehicleModal] = useState<CatalogVehicle | null>(null);
 
-  // Cek apakah jadwal pilihan customer bentrok dengan jadwal terbooking mobil
+  // Cek apakah tanggal sewa pilihan bentrok dengan booking aktif di database
   const checkVehicleAvailability = (vehicle: CatalogVehicle) => {
     if (!pickupDate) return { available: true, conflictSlot: null };
 
@@ -193,7 +71,8 @@ export default function Home() {
     const startStr = start.toISOString().split("T")[0];
     const endStr = end.toISOString().split("T")[0];
 
-    for (const slot of vehicle.bookedDates) {
+    const slots = vehicle.bookedDates || [];
+    for (const slot of slots) {
       if (startStr <= slot.endDate && endStr >= slot.startDate) {
         return { available: false, conflictSlot: slot };
       }
@@ -203,19 +82,21 @@ export default function Home() {
 
   // Hitung tarif harian sesuai paket yang dipilih
   const getUnitPrice = (vehicle: CatalogVehicle) => {
-    if (vehicle.category === "minibus") return vehicle.priceWithDriverPerDay;
-    return servicePackage === "dengan-driver" ? vehicle.priceWithDriverPerDay : vehicle.pricePerDay;
+    if (vehicle.category === "minibus") return vehicle.priceWithDriverPerDay || vehicle.pricePerDay;
+    return servicePackage === "dengan-driver"
+      ? vehicle.priceWithDriverPerDay || vehicle.pricePerDay + 200000
+      : vehicle.pricePerDay;
   };
 
   const filteredVehicles = useMemo(() => {
-    return CATALOG_VEHICLES.filter((item) => {
+    return vehicles.filter((item) => {
       const matchesCat = selectedCategory === "semua" || item.category === selectedCategory;
       const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
       const { available } = checkVehicleAvailability(item);
       const matchesAvailability = !onlyAvailable || available;
       return matchesCat && matchesSearch && matchesAvailability;
     });
-  }, [selectedCategory, searchQuery, onlyAvailable, pickupDate, durationDays]);
+  }, [vehicles, selectedCategory, searchQuery, onlyAvailable, pickupDate, durationDays]);
 
   const handleCekArmada = () => {
     const params = new URLSearchParams({
@@ -224,7 +105,7 @@ export default function Home() {
       jam: pickupTime,
       hari: String(durationDays),
     });
-    router.push(`/cari?${params.toString()}`);
+    router.push(`/katalog?${params.toString()}`);
   };
 
   const handleContactWhatsApp = (vehicle?: CatalogVehicle) => {
@@ -259,7 +140,7 @@ Mohon konfirmasi ketersediaan jadwal & prosedurnya.`;
 
   return (
     <div className="min-h-screen bg-slate-50 font-body-md text-slate-900 antialiased">
-      {/* Panggil Component Navbar Header */}
+      {/* Navbar Header */}
       <Navbar />
 
       {/* ================= HERO SECTION + CEK JADWAL WIDGET ================= */}
@@ -352,7 +233,9 @@ Mohon konfirmasi ketersediaan jadwal & prosedurnya.`;
               </p>
               <div className="grid grid-cols-2 gap-4 pt-2">
                 <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                  <span className="block text-2xl font-extrabold text-slate-900">65+ Unit</span>
+                  <span className="block text-2xl font-extrabold text-slate-900">
+                    {vehicles.length > 0 ? `${vehicles.length}+ Unit` : "Armada Lengkap"}
+                  </span>
                   <span className="text-xs text-slate-500">Armada Siap Pakai</span>
                 </div>
                 <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
@@ -489,8 +372,35 @@ Mohon konfirmasi ketersediaan jadwal & prosedurnya.`;
           ))}
         </div>
 
-        {/* Vehicles Grid */}
-        {filteredVehicles.length > 0 ? (
+        {/* Vehicles Grid / Skeleton / Error */}
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="bg-white border border-slate-200 rounded-2xl overflow-hidden animate-pulse">
+                <div className="h-52 bg-slate-200" />
+                <div className="p-5 space-y-4">
+                  <div className="h-5 bg-slate-200 rounded w-3/4" />
+                  <div className="h-4 bg-slate-100 rounded w-1/2" />
+                  <div className="pt-4 border-t border-slate-100 flex justify-between items-center">
+                    <div className="h-5 bg-slate-200 rounded w-1/3" />
+                    <div className="h-8 bg-slate-200 rounded w-1/3" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : isError ? (
+          <div className="bg-white rounded-2xl p-12 text-center space-y-3 border border-rose-200">
+            <span className="material-symbols-outlined text-4xl text-rose-500">cloud_off</span>
+            <h3 className="font-bold text-lg text-slate-900">Gagal Memuat Armada</h3>
+            <p className="text-xs text-slate-500">Pastikan server backend Laravel Anda sedang berjalan.</p>
+            <button
+              onClick={() => refetch()}
+              className="mt-2 px-4 py-2 bg-amber-600 text-white font-bold text-xs rounded-xl shadow-xs hover:bg-amber-700 cursor-pointer">
+              Coba Lagi
+            </button>
+          </div>
+        ) : filteredVehicles.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredVehicles.map((vehicle) => {
               const { available, conflictSlot } = checkVehicleAvailability(vehicle);
@@ -659,13 +569,17 @@ Mohon konfirmasi ketersediaan jadwal & prosedurnya.`;
         </div>
       </section>
 
-      {/* ================= PARTNER SECTION (PERSIS JEJAKIN) ================= */}
+      {/* ================= PARTNER SECTION (PERSIS JEJAKIN DENGAN BLUR TEPI) ================= */}
       <section id="partner" className="py-14 sm:py-16 bg-white border-t border-slate-200 scroll-mt-24 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-3">
           <div className="text-center max-w-2xl mx-auto space-y-1.5">
             <span className="text-xs font-bold text-amber-600 uppercase tracking-wider">MITRA BERPENGALAMAN</span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Partner & Pelanggan Perusahaan</h2>
-            <p className="text-xs sm:text-sm text-slate-500">Telah dipercaya oleh berbagai instansi dan perusahaan terkemuka.</p>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              Partner & Pelanggan Perusahaan
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500">
+              Telah dipercaya oleh berbagai instansi dan perusahaan terkemuka.
+            </p>
           </div>
         </div>
 
@@ -710,7 +624,7 @@ Mohon konfirmasi ketersediaan jadwal & prosedurnya.`;
 
       {/* ================= MODAL DETAIL SPESIFIKASI & JADWAL ================= */}
       {selectedVehicleModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl text-slate-900 space-y-4">
             <div className="relative h-56 w-full bg-slate-100">
               <img
@@ -743,7 +657,7 @@ Mohon konfirmasi ketersediaan jadwal & prosedurnya.`;
                   <span className="material-symbols-outlined text-[16px]">calendar_month</span>
                   Informasi Jadwal Unit:
                 </span>
-                {selectedVehicleModal.bookedDates.length > 0 ? (
+                {selectedVehicleModal.bookedDates && selectedVehicleModal.bookedDates.length > 0 ? (
                   <ul className="text-xs text-amber-900 space-y-1 pl-5 list-disc">
                     {selectedVehicleModal.bookedDates.map((slot, idx) => (
                       <li key={idx}>
@@ -816,7 +730,7 @@ Mohon konfirmasi ketersediaan jadwal & prosedurnya.`;
         </div>
       )}
 
-      {/* Panggil Component Footer */}
+      {/* Footer */}
       <Footer />
     </div>
   );

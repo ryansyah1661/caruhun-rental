@@ -12,8 +12,17 @@ class EnsureRole
     {
         $user = $request->user();
 
-        if (!$user || !in_array($user->role, $roles, true)) {
-            abort(403, 'Tidak punya akses.');
+        if (!$user) {
+            abort(401, 'Unauthenticated.');
+        }
+
+        // Superadmin memiliki akses bypass ke seluruh route
+        if ($user->role === 'superadmin') {
+            return $next($request);
+        }
+
+        if (!in_array($user->role, $roles, true)) {
+            abort(403, 'Akses ditolak: Anda tidak memiliki izin untuk tindakan ini.');
         }
 
         return $next($request);

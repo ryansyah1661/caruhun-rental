@@ -11,7 +11,6 @@ class AdminCustomerController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        // 1. Ambil data pelanggan dari PostgreSQL beserta total riwayat booking-nya
         $customers = Customer::withCount('bookings')
             ->latest()
             ->get()
@@ -29,6 +28,36 @@ class AdminCustomerController extends Controller
         return response()->json([
             'customers' => $customers,
             'total' => $customers->count(),
+        ]);
+    }
+
+    public function update(Request $request, string $id): JsonResponse
+    {
+        $customer = Customer::findOrFail($id);
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:30',
+            'nik' => 'nullable|string|max:50',
+        ]);
+
+        $customer->name = $data['name'];
+        if (isset($data['phone'])) $customer->phone = $data['phone'];
+        if (isset($data['nik'])) $customer->id_number = $data['nik'];
+        $customer->save();
+
+        return response()->json([
+            'message' => 'Data pelanggan berhasil diperbarui.',
+            'customer' => $customer,
+        ]);
+    }
+
+    public function destroy(string $id): JsonResponse
+    {
+        $customer = Customer::findOrFail($id);
+        $customer->delete(); // Soft delete
+
+        return response()->json([
+            'message' => 'Pelanggan berhasil dihapus.',
         ]);
     }
 }

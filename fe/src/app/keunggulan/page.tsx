@@ -4,8 +4,9 @@ import React from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { usePageContent } from "@/lib/use-page-content";
 
-const KEUNGGULAN_UTAMA = [
+const DEFAULT_KEUNGGULAN_UTAMA = [
   {
     icon: "verified",
     title: "Armada Prima & Inspeksi Ketat",
@@ -50,7 +51,7 @@ const KEUNGGULAN_UTAMA = [
   },
 ];
 
-const PERBANDINGAN_LAYANAN = [
+const DEFAULT_PERBANDINGAN_LAYANAN = [
   {
     aspek: "Kondisi & Kebersihan Mobil",
     caruhun: "Checklist wajib & cuci bersih sebelum serah terima",
@@ -107,6 +108,12 @@ const HOW_TO_RENT_STEPS = [
 ];
 
 export default function KeunggulanPage() {
+  const { data } = usePageContent("keunggulan");
+  const sections = data?.sections || {};
+
+  const keunggulanList = sections?.features?.extra_items || DEFAULT_KEUNGGULAN_UTAMA;
+  const perbandinganList = sections?.comparison?.extra_items || DEFAULT_PERBANDINGAN_LAYANAN;
+
   const handleContactWhatsApp = () => {
     const adminPhoneNumber = "6281234567890";
     const msg =
@@ -116,22 +123,23 @@ export default function KeunggulanPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 font-body-md text-slate-900 antialiased">
-      {/* Panggil Component Navbar */}
       <Navbar />
 
       {/* ================= HERO SECTION ================= */}
       <section className="bg-white pt-32 sm:pt-36 pb-16 border-b border-slate-200">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
           <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold">
-            Mengapa Memilih Caruhun
+            {sections?.hero?.badge || "Mengapa Memilih Caruhun"}
           </span>
           <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
-            Standar Layanan Profesional <br />
-            <span className="text-amber-600">Untuk Kenyamanan Perjalanan Anda</span>
+            {sections?.hero?.title || "Standar Layanan Profesional"} <br />
+            <span className="text-amber-600">
+              {sections?.hero?.title_highlight || "Untuk Kenyamanan Perjalanan Anda"}
+            </span>
           </h1>
           <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
-            Kami menggabungkan kualitas armada yang selalu prima dengan sistem manajemen operasional modern untuk
-            memberikan pengalaman sewa kendaraan tanpa rasa khawatir.
+            {sections?.hero?.description ||
+              "Kami menggabungkan kualitas armada yang selalu prima dengan sistem manajemen operasional modern untuk memberikan pengalaman sewa kendaraan tanpa rasa khawatir."}
           </p>
         </div>
       </section>
@@ -140,21 +148,23 @@ export default function KeunggulanPage() {
       <section className="py-16 bg-slate-50 border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
           <div className="text-center max-w-2xl mx-auto space-y-2">
-            <span className="text-xs font-bold text-amber-600 uppercase tracking-wider">NILAI LEBIH KAMI</span>
+            <span className="text-xs font-bold text-amber-600 uppercase tracking-wider">
+              {sections?.features?.badge || "NILAI LEBIH KAMI"}
+            </span>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-              6 Alasan Pelanggan Mempercayai Caruhun
+              {sections?.features?.title || "6 Alasan Pelanggan Mempercayai Caruhun"}
             </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {KEUNGGULAN_UTAMA.map((item, index) => (
+            {keunggulanList.map((item: any, index: number) => (
               <div
                 key={index}
                 className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between space-y-4">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
-                      <span className="material-symbols-outlined text-2xl">{item.icon}</span>
+                      <span className="material-symbols-outlined text-2xl">{item.icon || "verified"}</span>
                     </div>
                     <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-[10px] font-bold uppercase tracking-wide">
                       {item.highlight}
@@ -190,7 +200,7 @@ export default function KeunggulanPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 bg-white">
-                {PERBANDINGAN_LAYANAN.map((row, idx) => (
+                {perbandinganList.map((row: any, idx: number) => (
                   <tr key={idx} className="hover:bg-slate-50 transition-colors divide-x divide-slate-200">
                     <td className="px-5 py-4 font-bold text-slate-900">{row.aspek}</td>
                     <td className="px-5 py-4 text-emerald-700 font-semibold">
@@ -210,7 +220,7 @@ export default function KeunggulanPage() {
         </div>
       </section>
 
-      {/* ================= CARA SEWA / TUTORIAL PEMESANAN (SAMA DENGAN BERANDA) ================= */}
+      {/* ================= CARA SEWA / TUTORIAL PEMESANAN ================= */}
       <section id="cara-sewa" className="py-16 bg-slate-100 border-b border-slate-200 scroll-mt-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
           <div className="max-w-2xl space-y-2">
@@ -224,7 +234,6 @@ export default function KeunggulanPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 relative">
             {HOW_TO_RENT_STEPS.map((item, idx) => (
               <div key={item.step} className="relative flex flex-col space-y-3">
-                {/* Garis Penghubung Horizontal Desktop */}
                 {idx < HOW_TO_RENT_STEPS.length - 1 && (
                   <div className="hidden lg:block absolute top-4 left-9 right-0 h-[2px] bg-slate-300 z-0" />
                 )}
@@ -254,7 +263,7 @@ export default function KeunggulanPage() {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
               <Link
-                href="/#katalog"
+                href="/katalog"
                 className="w-full sm:w-auto px-6 py-3 rounded-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs transition-all active:scale-95">
                 Jelajahi Katalog Mobil
               </Link>
@@ -270,7 +279,6 @@ export default function KeunggulanPage() {
         </div>
       </section>
 
-      {/* Panggil Component Footer */}
       <Footer />
     </div>
   );

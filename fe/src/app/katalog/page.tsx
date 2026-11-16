@@ -3,133 +3,22 @@
 import React, { useState, useMemo } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-
-type CategoryFilter = "semua" | "mpv" | "city" | "suv" | "minibus";
-
-interface CatalogVehicle {
-  id: string;
-  name: string;
-  category: CategoryFilter;
-  categoryLabel: string;
-  transmission: string;
-  seats: number;
-  fuelType: string;
-  pricePerDay: number;
-  image: string;
-  isAvailable: boolean;
-  details: {
-    year: number;
-    engine: string;
-    description: string;
-    features: string[];
-  };
-}
-
-const CATALOG_VEHICLES: CatalogVehicle[] = [
-  {
-    id: "1",
-    name: "Toyota Avanza 1.5 G",
-    category: "mpv",
-    categoryLabel: "MPV / Keluarga",
-    transmission: "Automatic (CVT)",
-    seats: 7,
-    fuelType: "Bensin",
-    pricePerDay: 450000,
-    image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?q=80&w=800&auto=format&fit=crop",
-    isAvailable: true,
-    details: {
-      year: 2023,
-      engine: "1.500 cc Dual VVT-i",
-      description: "Mobil keluarga favorit dengan kabin luas, irit bensin, dan AC dingin double blower.",
-      features: ["AC Double Blower", "Bluetooth Audio", "Sensor Parkir", "Kamera Mundur"],
-    },
-  },
-  {
-    id: "2",
-    name: "Toyota Innova Zenix 2.0 V",
-    category: "mpv",
-    categoryLabel: "Premium MPV",
-    transmission: "Automatic",
-    seats: 7,
-    fuelType: "Bensin",
-    pricePerDay: 800000,
-    image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=800&auto=format&fit=crop",
-    isAvailable: true,
-    details: {
-      year: 2024,
-      engine: "2.000 cc Dynamic Force",
-      description: "Performa mumpuni dengan kenyamanan kelas atas untuk dinas kantor maupun liburan keluarga.",
-      features: ["Panoramic Sunroof", "Captain Seat", "Ambient Light", "Power Backdoor"],
-    },
-  },
-  {
-    id: "3",
-    name: "Honda Brio RS Urbanite",
-    category: "city",
-    categoryLabel: "City Car",
-    transmission: "Matic CVT",
-    seats: 5,
-    fuelType: "Bensin",
-    pricePerDay: 350000,
-    image: "https://images.unsplash.com/photo-1590362891991-f776e747a588?q=80&w=800&auto=format&fit=crop",
-    isAvailable: true,
-    details: {
-      year: 2022,
-      engine: "1.200 cc i-VTEC",
-      description: "Lincah di jalan perkotaan, sangat hemat BBM, dan gampang untuk parkir.",
-      features: ["Touchscreen Headunit", "Bodykit RS", "Keyless Entry", "Audio Steering Switch"],
-    },
-  },
-  {
-    id: "4",
-    name: "Mitsubishi Pajero Sport Dakar",
-    category: "suv",
-    categoryLabel: "SUV Tough",
-    transmission: "Automatic 8-Speed",
-    seats: 7,
-    fuelType: "Diesel",
-    pricePerDay: 1200000,
-    image: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?q=80&w=800&auto=format&fit=crop",
-    isAvailable: false,
-    details: {
-      year: 2023,
-      engine: "2.400 cc MIVEC Turbo Diesel",
-      description: "SUV tangguh dan mewah siap melibas segala rute perjalanan luar kota.",
-      features: ["Sunroof", "Leather Seat", "Forward Collision Mitigation", "Paddle Shift"],
-    },
-  },
-  {
-    id: "5",
-    name: "Toyota HiAce Commuter",
-    category: "minibus",
-    categoryLabel: "Minibus 16-Seat",
-    transmission: "Manual Diesel",
-    seats: 16,
-    fuelType: "Diesel",
-    pricePerDay: 1300000,
-    image: "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?q=80&w=800&auto=format&fit=crop",
-    isAvailable: true,
-    details: {
-      year: 2021,
-      engine: "2.500 cc Turbo Diesel",
-      description: "Solusi terbaik untuk rombongan wisata, acara keluarga besar, maupun travel dinas.",
-      features: ["Reclining Seat", "Full AC Microbus", "Colokan Charger Phone", "Bagasi Luas"],
-    },
-  },
-];
+import { useCatalog, CatalogVehicle, CategoryFilter } from "@/lib/use-catalog";
 
 export default function KatalogPage() {
+  const { data: vehicles = [], isLoading, isError, refetch } = useCatalog();
+
   const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>("semua");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedVehicleModal, setSelectedVehicleModal] = useState<CatalogVehicle | null>(null);
 
   const filteredVehicles = useMemo(() => {
-    return CATALOG_VEHICLES.filter((item) => {
+    return vehicles.filter((item) => {
       const matchesCat = selectedCategory === "semua" || item.category === selectedCategory;
       const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCat && matchesSearch;
     });
-  }, [selectedCategory, searchQuery]);
+  }, [vehicles, selectedCategory, searchQuery]);
 
   const handleContactWhatsApp = (vehicleName?: string) => {
     const adminPhoneNumber = "6281234567890";
@@ -144,7 +33,7 @@ export default function KatalogPage() {
       {/* Navbar Header */}
       <Navbar />
 
-      {/* ================= HERO KATALOG (SERAGAM CENTERED) ================= */}
+      {/* ================= HERO KATALOG ================= */}
       <section className="bg-white pt-32 sm:pt-36 pb-14 border-b border-slate-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-5">
           <span className="inline-flex items-center px-3.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold">
@@ -215,8 +104,35 @@ export default function KatalogPage() {
           </div>
         </div>
 
-        {/* Vehicles Grid */}
-        {filteredVehicles.length > 0 ? (
+        {/* Loading Skeleton */}
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="bg-white border border-slate-200 rounded-2xl overflow-hidden animate-pulse">
+                <div className="h-52 bg-slate-200" />
+                <div className="p-5 space-y-4">
+                  <div className="h-5 bg-slate-200 rounded w-3/4" />
+                  <div className="h-4 bg-slate-100 rounded w-1/2" />
+                  <div className="pt-4 border-t border-slate-100 flex justify-between items-center">
+                    <div className="h-5 bg-slate-200 rounded w-1/3" />
+                    <div className="h-8 bg-slate-200 rounded w-1/3" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : isError ? (
+          <div className="bg-white rounded-2xl p-12 text-center space-y-3 border border-rose-200">
+            <span className="material-symbols-outlined text-4xl text-rose-500">cloud_off</span>
+            <h3 className="font-bold text-lg text-slate-900">Gagal Memuat Katalog</h3>
+            <p className="text-xs text-slate-500">Pastikan server Laravel backend Anda sedang berjalan.</p>
+            <button
+              onClick={() => refetch()}
+              className="mt-2 px-4 py-2 bg-amber-600 text-white font-bold text-xs rounded-xl shadow-xs hover:bg-amber-700 cursor-pointer">
+              Coba Lagi
+            </button>
+          </div>
+        ) : filteredVehicles.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredVehicles.map((vehicle) => (
               <div
@@ -304,7 +220,7 @@ export default function KatalogPage() {
 
       {/* ================= MODAL DETAIL SPESIFIKASI ================= */}
       {selectedVehicleModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl text-slate-900 space-y-4">
             <div className="relative h-56 w-full bg-slate-100">
               <img

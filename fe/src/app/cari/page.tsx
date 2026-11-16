@@ -7,154 +7,13 @@ import Footer from "@/components/Footer";
 import CustomDatePicker from "@/components/CustomDatePicker";
 import CustomTimePicker from "@/components/CustomTimePicker";
 import CustomDurationPicker from "@/components/CustomDurationPicker";
+import { useCatalog, CatalogVehicle, CategoryFilter } from "@/lib/use-catalog";
 
-type CategoryFilter = "semua" | "mpv" | "city" | "suv" | "minibus";
 type TransmissionFilter = "semua" | "matic" | "manual";
 type SeatFilter = 0 | 5 | 7 | 16;
 type PlateFilter = "semua" | "Plat ganjil" | "Plat genap";
 type ServicePackage = "lepas-kunci" | "dengan-driver" | "bandara";
 type SortOption = "termurah" | "termahal" | "terbaru";
-
-interface BookedSlot {
-  startDate: string;
-  endDate: string;
-}
-
-interface CatalogVehicle {
-  id: string;
-  name: string;
-  category: CategoryFilter;
-  categoryLabel: string;
-  transmissionType: "matic" | "manual";
-  transmissionLabel: string;
-  seats: 5 | 7 | 16;
-  fuelType: string;
-  color: string;
-  plateType: "Plat ganjil" | "Plat genap";
-  pricePerDay: number;
-  priceWithDriverPerDay: number;
-  image: string;
-  bookedDates: BookedSlot[];
-  details: {
-    year: number;
-    engine: string;
-    description: string;
-    features: string[];
-  };
-}
-
-const CATALOG_VEHICLES: CatalogVehicle[] = [
-  {
-    id: "1",
-    name: "Toyota Avanza 1.5 G",
-    category: "mpv",
-    categoryLabel: "MPV Keluarga",
-    transmissionType: "matic",
-    transmissionLabel: "Automatic (CVT)",
-    seats: 7,
-    fuelType: "Bensin",
-    color: "Silver",
-    plateType: "Plat genap",
-    pricePerDay: 450000,
-    priceWithDriverPerDay: 650000,
-    image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?q=80&w=800&auto=format&fit=crop",
-    bookedDates: [{ startDate: "2026-11-15", endDate: "2026-11-17" }],
-    details: {
-      year: 2023,
-      engine: "1.500 cc Dual VVT-i",
-      description: "Mobil keluarga favorit dengan kabin luas, irit bensin, dan AC dingin double blower.",
-      features: ["AC Double Blower", "Bluetooth Audio", "Sensor Parkir", "Kamera Mundur"],
-    },
-  },
-  {
-    id: "2",
-    name: "Toyota Innova Zenix 2.0 V",
-    category: "mpv",
-    categoryLabel: "Premium MPV",
-    transmissionType: "matic",
-    transmissionLabel: "Automatic",
-    seats: 7,
-    fuelType: "Bensin",
-    color: "Hitam",
-    plateType: "Plat ganjil",
-    pricePerDay: 800000,
-    priceWithDriverPerDay: 1000000,
-    image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=800&auto=format&fit=crop",
-    bookedDates: [],
-    details: {
-      year: 2024,
-      engine: "2.000 cc Dynamic Force",
-      description: "Performa mumpuni dengan kenyamanan kelas atas untuk dinas kantor maupun liburan keluarga.",
-      features: ["Panoramic Sunroof", "Captain Seat", "Ambient Light", "Power Backdoor"],
-    },
-  },
-  {
-    id: "3",
-    name: "Honda Brio RS Urbanite",
-    category: "city",
-    categoryLabel: "City Car",
-    transmissionType: "matic",
-    transmissionLabel: "Matic CVT",
-    seats: 5,
-    fuelType: "Bensin",
-    color: "Putih",
-    plateType: "Plat genap",
-    pricePerDay: 350000,
-    priceWithDriverPerDay: 550000,
-    image: "https://images.unsplash.com/photo-1590362891991-f776e747a588?q=80&w=800&auto=format&fit=crop",
-    bookedDates: [],
-    details: {
-      year: 2022,
-      engine: "1.200 cc i-VTEC",
-      description: "Lincah di jalan perkotaan, sangat hemat BBM, dan gampang untuk parkir.",
-      features: ["Touchscreen Headunit", "Bodykit RS", "Keyless Entry", "Audio Steering Switch"],
-    },
-  },
-  {
-    id: "4",
-    name: "Mitsubishi Pajero Sport Dakar",
-    category: "suv",
-    categoryLabel: "SUV Tough",
-    transmissionType: "matic",
-    transmissionLabel: "Automatic 8-Speed",
-    seats: 7,
-    fuelType: "Diesel",
-    color: "Hitam",
-    plateType: "Plat ganjil",
-    pricePerDay: 1200000,
-    priceWithDriverPerDay: 1450000,
-    image: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?q=80&w=800&auto=format&fit=crop",
-    bookedDates: [{ startDate: "2026-11-13", endDate: "2026-11-16" }],
-    details: {
-      year: 2023,
-      engine: "2.400 cc MIVEC Turbo Diesel",
-      description: "SUV tangguh dan mewah siap melibas segala rute perjalanan luar kota.",
-      features: ["Sunroof", "Leather Seat", "Forward Collision Mitigation", "Paddle Shift"],
-    },
-  },
-  {
-    id: "5",
-    name: "Toyota HiAce Commuter",
-    category: "minibus",
-    categoryLabel: "Minibus 16-Seat",
-    transmissionType: "manual",
-    transmissionLabel: "Manual Diesel",
-    seats: 16,
-    fuelType: "Diesel",
-    color: "Putih",
-    plateType: "Plat genap",
-    pricePerDay: 1300000,
-    priceWithDriverPerDay: 1300000,
-    image: "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?q=80&w=800&auto=format&fit=crop",
-    bookedDates: [],
-    details: {
-      year: 2021,
-      engine: "2.500 cc Turbo Diesel",
-      description: "Solusi terbaik untuk rombongan wisata, acara keluarga besar, maupun travel dinas.",
-      features: ["Reclining Seat", "Full AC Microbus", "Colokan Charger Phone", "Bagasi Luas"],
-    },
-  },
-];
 
 const SHORT_DAYS = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 const SHORT_MONTHS = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
@@ -173,6 +32,9 @@ function formatFullSchedule(dateStr: string, timeStr: string, addDays = 0): stri
 function SearchResultsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  // Ambil data riil dari PostgreSQL via Laravel API
+  const { data: rawVehicles = [], isLoading } = useCatalog();
 
   const initialPkg = (searchParams.get("paket") as ServicePackage) || "lepas-kunci";
   const initialDate = searchParams.get("mulai") || new Date().toISOString().split("T")[0];
@@ -206,7 +68,8 @@ function SearchResultsContent() {
     const startStr = start.toISOString().split("T")[0];
     const endStr = end.toISOString().split("T")[0];
 
-    for (const slot of vehicle.bookedDates) {
+    const booked = vehicle.bookedDates || [];
+    for (const slot of booked) {
       if (startStr <= slot.endDate && endStr >= slot.startDate) {
         return { available: false, conflictSlot: slot };
       }
@@ -220,12 +83,14 @@ function SearchResultsContent() {
   };
 
   const processedVehicles = useMemo(() => {
-    const filtered = CATALOG_VEHICLES.filter((v) => {
+    const filtered = rawVehicles.filter((v) => {
       if (searchQuery && !v.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
       if (catFilter !== "semua" && v.category !== catFilter) return false;
-      if (transFilter !== "semua" && v.transmissionType !== transFilter) return false;
+      const vTrans = v.transmissionType || (v.transmission?.toLowerCase().includes("man") ? "manual" : "matic");
+      if (transFilter !== "semua" && vTrans !== transFilter) return false;
       if (seatFilter !== 0 && v.seats !== seatFilter) return false;
-      if (plateFilter !== "semua" && v.plateType !== plateFilter) return false;
+      const vPlate = v.plateType || "Plat genap";
+      if (plateFilter !== "semua" && vPlate !== plateFilter) return false;
       if (onlyAvailable && !checkAvailability(v).available) return false;
       return true;
     });
@@ -237,9 +102,10 @@ function SearchResultsContent() {
 
       if (sortBy === "termurah") return getDailyPrice(a) - getDailyPrice(b);
       if (sortBy === "termahal") return getDailyPrice(b) - getDailyPrice(a);
-      return b.details.year - a.details.year;
+      return (b.details?.year || 0) - (a.details?.year || 0);
     });
   }, [
+    rawVehicles,
     searchQuery,
     catFilter,
     transFilter,
@@ -266,8 +132,8 @@ function SearchResultsContent() {
   };
 
   const selectedVehicles = useMemo(
-    () => CATALOG_VEHICLES.filter((v) => selectedUnitIds.includes(v.id)),
-    [selectedUnitIds],
+    () => rawVehicles.filter((v) => selectedUnitIds.includes(v.id)),
+    [rawVehicles, selectedUnitIds],
   );
 
   const grandTotal = useMemo(
@@ -288,7 +154,7 @@ function SearchResultsContent() {
     setIsEditingSchedule(false);
     setSelectedUnitIds((prev) =>
       prev.filter((id) => {
-        const unit = CATALOG_VEHICLES.find((v) => v.id === id);
+        const unit = rawVehicles.find((v) => v.id === id);
         return unit ? checkAvailability(unit).available : false;
       }),
     );
@@ -310,7 +176,7 @@ function SearchResultsContent() {
     const unitLines = selectedVehicles
       .map(
         (v, idx) =>
-          `${idx + 1}. *${v.name}* (${v.transmissionLabel}, ${v.plateType}) — Rp ${(
+          `${idx + 1}. *${v.name}* (${v.transmissionLabel || v.transmission}, ${v.plateType || "Plat genap"}) — Rp ${(
             getDailyPrice(v) * durationDays
           ).toLocaleString("id-ID")}`,
       )
@@ -353,7 +219,7 @@ Mohon info ketersediaan & prosedur selanjutnya. Terima kasih!`;
                 <span className="font-semibold text-slate-800">Ketersediaan Armada</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                {availableCount} Armada Siap Jalan
+                {isLoading ? "Memuat Ketersediaan..." : `${availableCount} Armada Siap Jalan`}
               </h1>
             </div>
 
@@ -609,8 +475,14 @@ Mohon info ketersediaan & prosedur selanjutnya. Terima kasih!`;
             {/* Bar Info Hasil & Sortir */}
             <div className="flex flex-wrap items-center justify-between gap-3 bg-white border border-slate-200 rounded-2xl px-4 py-3">
               <p className="text-xs text-slate-600">
-                Menampilkan <strong>{processedVehicles.length}</strong> unit untuk durasi{" "}
-                <strong>{durationDays} hari</strong> (maks. 5 unit per pesanan)
+                {isLoading ? (
+                  "Mengambil unit dari database..."
+                ) : (
+                  <>
+                    Menampilkan <strong>{processedVehicles.length}</strong> unit untuk durasi{" "}
+                    <strong>{durationDays} hari</strong> (maks. 5 unit per pesanan)
+                  </>
+                )}
               </p>
 
               <div className="flex items-center gap-2">
@@ -626,8 +498,24 @@ Mohon info ketersediaan & prosedur selanjutnya. Terima kasih!`;
               </div>
             </div>
 
-            {/* Daftar Horizontal Fleet Cards */}
-            {processedVehicles.length > 0 ? (
+            {/* Loading State Skeleton */}
+            {isLoading ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((n) => (
+                  <div
+                    key={n}
+                    className="bg-white border border-slate-200 rounded-2xl p-6 animate-pulse flex flex-col md:flex-row gap-6">
+                    <div className="w-full md:w-1/3 h-44 bg-slate-100 rounded-xl" />
+                    <div className="flex-1 space-y-3">
+                      <div className="h-5 bg-slate-100 rounded w-1/2" />
+                      <div className="h-4 bg-slate-100 rounded w-3/4" />
+                      <div className="h-4 bg-slate-100 rounded w-1/3" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : processedVehicles.length > 0 ? (
+              /* Daftar Horizontal Fleet Cards */
               <div className="space-y-4">
                 {processedVehicles.map((vehicle) => {
                   const { available, conflictSlot } = checkAvailability(vehicle);
@@ -674,7 +562,7 @@ Mohon info ketersediaan & prosedur selanjutnya. Terima kasih!`;
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-slate-700 pt-1">
                           <span className="flex items-center gap-1">
                             <span className="material-symbols-outlined text-[15px] text-slate-400">tune</span>
-                            {vehicle.transmissionLabel}
+                            {vehicle.transmissionLabel || vehicle.transmission}
                           </span>
                           <span className="flex items-center gap-1">
                             <span className="material-symbols-outlined text-[15px] text-slate-400">group</span>
@@ -686,7 +574,7 @@ Mohon info ketersediaan & prosedur selanjutnya. Terima kasih!`;
                             </span>
                             {vehicle.fuelType}
                           </span>
-                          <span className="text-slate-400">• {vehicle.plateType}</span>
+                          <span className="text-slate-400">• {vehicle.plateType || "Plat genap"}</span>
                         </div>
 
                         {/* Fitur Singkat atau Info Bentrok */}
@@ -844,7 +732,7 @@ Mohon info ketersediaan & prosedur selanjutnya. Terima kasih!`;
                 <div>
                   <span className="text-slate-400 block">Tahun & Plat</span>
                   <strong>
-                    {detailModalVehicle.details.year} • {detailModalVehicle.plateType}
+                    {detailModalVehicle.details.year} • {detailModalVehicle.plateType || "Plat genap"}
                   </strong>
                 </div>
               </div>

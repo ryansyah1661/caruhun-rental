@@ -1,14 +1,14 @@
-export type Role = "admin" | "office_staff" | "field_staff";
+export type Role = "superadmin" | "admin" | "petugas";
 
 export type User = {
-  id: number;
+  id: number | string;
   name: string;
   email: string;
   role: Role;
 };
 
 export const roleLabel: Record<Role, string> = {
-  admin: "Admin",
-  office_staff: "Staf Kantor",
-  field_staff: "Staf Lapangan",
+  superadmin: "Super Admin",
+  admin: "Admin Kantor",
+  petugas: "Petugas Lapangan",
 };

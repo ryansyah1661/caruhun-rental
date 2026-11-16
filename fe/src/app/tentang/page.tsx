@@ -4,8 +4,13 @@ import React from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { usePageContent } from "@/lib/use-page-content";
 
 export default function TentangPage() {
+  const { data, isLoading } = usePageContent("tentang");
+  const sections = data?.sections || {};
+  const stats = data?.stats;
+
   const handleContactWhatsApp = () => {
     const adminPhoneNumber = "6281234567890";
     const msg = "Halo Admin Caruhun Rental, saya ingin mengetahui informasi lebih lanjut mengenai layanan sewa armada.";
@@ -14,22 +19,24 @@ export default function TentangPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 font-body-md text-slate-900 antialiased">
-      {/* Panggil Component Navbar */}
+      {/* Navbar Header */}
       <Navbar />
 
       {/* ================= HERO SECTION ================= */}
       <section className="bg-white pt-32 sm:pt-36 pb-16 border-b border-slate-200">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
           <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold">
-            Tentang Caruhun Rental Armada
+            {sections?.hero?.badge || "Tentang Caruhun Rental Armada"}
           </span>
           <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
-            Mitra Perjalanan Resmi, Aman, <br />
-            <span className="text-amber-600">& Terpercaya Untuk Setiap Kebutuhan</span>
+            {sections?.hero?.title || "Mitra Perjalanan Resmi, Aman,"} <br />
+            <span className="text-amber-600">
+              {sections?.hero?.title_highlight || "& Terpercaya Untuk Setiap Kebutuhan"}
+            </span>
           </h1>
           <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
-            Hadir dengan standar armada terawat dan sistem manajemen operasional terpadu untuk memastikan kenyamanan
-            mobilitas pribadi, keluarga, maupun korporasi Anda.
+            {sections?.hero?.description ||
+              "Hadir dengan standar armada terawat dan sistem manajemen operasional terpadu untuk memastikan kenyamanan mobilitas pribadi, keluarga, maupun korporasi Anda."}
           </p>
         </div>
       </section>
@@ -38,44 +45,59 @@ export default function TentangPage() {
       <section className="py-16 bg-slate-50 border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Gambar */}
-            <div className="relative h-80 sm:h-96 rounded-2xl overflow-hidden shadow-md border border-slate-200">
+            {/* Foto Pool Armada */}
+            <div className="relative h-80 sm:h-96 rounded-2xl overflow-hidden shadow-md border border-slate-200 bg-slate-100">
               <img
-                src="https://images.unsplash.com/photo-1563720223185-11003d516935?q=80&w=1200&auto=format&fit=crop"
+                src={
+                  sections?.story?.image_path ||
+                  "https://images.unsplash.com/photo-1563720223185-11003d516935?q=80&w=1200&auto=format&fit=crop"
+                }
                 alt="Armada Caruhun Rental"
                 className="w-full h-full object-cover"
               />
             </div>
 
-            {/* Konten Teks */}
+            {/* Konten Teks & Statistik Real-Time */}
             <div className="space-y-5">
-              <span className="text-xs font-bold text-amber-600 uppercase tracking-wider">SIAPA KAMI</span>
+              <span className="text-xs font-bold text-amber-600 uppercase tracking-wider">
+                {sections?.story?.badge || "SIAPA KAMI"}
+              </span>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-snug">
-                Mengutamakan Kualitas Armada & Ketepatan Layanan
+                {sections?.story?.title || "Mengutamakan Kualitas Armada & Ketepatan Layanan"}
               </h2>
               <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
-                <strong>Caruhun Rental Armada</strong> didirikan dengan komitmen menjawab kebutuhan transportasi yang
-                transparan, mudah diakses, dan dapat diandalkan. Kami memahami bahwa keamanan di jalan dimulai dari
-                kondisi kendaraan yang prima.
+                {sections?.story?.description || (
+                  <>
+                    <strong>Caruhun Rental Armada</strong> didirikan dengan komitmen menjawab kebutuhan transportasi
+                    yang transparan, mudah diakses, dan dapat diandalkan. Kami memahami bahwa keamanan di jalan dimulai
+                    dari kondisi kendaraan yang prima.
+                  </>
+                )}
               </p>
               <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
-                Oleh karena itu, setiap unit kendaraan yang kami sewakan—mulai dari City Car, MPV keluarga, SUV tangguh,
-                hingga Minibus rombongan—selalu melewati daftar periksa (checklist) kelayakan sebelum keberangkatan dan
-                perawatan berkala yang terjadwal.
+                Setiap unit kendaraan yang kami sewakan—mulai dari City Car, MPV keluarga, SUV tangguh, hingga Minibus
+                rombongan—selalu melewati daftar periksa (checklist) kelayakan sebelum keberangkatan dan perawatan
+                berkala yang terjadwal.
               </p>
 
-              {/* Statistik Singkat */}
+              {/* Statistik Real-Time dari PostgreSQL */}
               <div className="grid grid-cols-3 gap-4 pt-3">
                 <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
-                  <span className="block text-xl sm:text-2xl font-extrabold text-slate-900">65+</span>
+                  <span className="block text-xl sm:text-2xl font-extrabold text-slate-900">
+                    {isLoading ? "..." : stats?.total_vehicles || "65+"}
+                  </span>
                   <span className="text-[11px] text-slate-500 font-medium">Unit Armada</span>
                 </div>
                 <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
-                  <span className="block text-xl sm:text-2xl font-extrabold text-amber-600">24/7</span>
+                  <span className="block text-xl sm:text-2xl font-extrabold text-amber-600">
+                    {stats?.support_hours || "24/7"}
+                  </span>
                   <span className="text-[11px] text-slate-500 font-medium">Dukungan CS</span>
                 </div>
                 <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
-                  <span className="block text-xl sm:text-2xl font-extrabold text-emerald-600">99.8%</span>
+                  <span className="block text-xl sm:text-2xl font-extrabold text-emerald-600">
+                    {stats?.satisfaction_rate || "99.8%"}
+                  </span>
                   <span className="text-[11px] text-slate-500 font-medium">Kepuasan Klien</span>
                 </div>
               </div>
@@ -202,7 +224,7 @@ export default function TentangPage() {
               <button
                 type="button"
                 onClick={handleContactWhatsApp}
-                className="w-full sm:w-auto px-6 py-3 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95">
+                className="w-full sm:w-auto px-6 py-3 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
                 <span className="material-symbols-outlined text-[18px]">chat</span>
                 <span>Hubungi Admin via WA</span>
               </button>
@@ -211,7 +233,7 @@ export default function TentangPage() {
         </div>
       </section>
 
-      {/* Panggil Component Footer */}
+      {/* Footer */}
       <Footer />
     </div>
   );
