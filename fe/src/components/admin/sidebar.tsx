@@ -14,7 +14,7 @@ const SUPER_ONLY: Role[] = ["superadmin"];
 
 export const ADMIN_MENU: MenuItem[] = [
   // Grup 1: Operasional
-  { href: "/admin", label: "Dashboard", icon: "dashboard", roles: OFFICE, section: "OPERASIONAL" },
+  { href: "/admin", label: "Dashboard", icon: "dashboard", roles: ALL, section: "OPERASIONAL" },
   { href: "/admin/bookings", label: "Booking", icon: "book_online", roles: OFFICE, section: "OPERASIONAL" },
   { href: "/admin/departures", label: "Keberangkatan", icon: "departure_board", roles: ALL, section: "OPERASIONAL" },
   { href: "/admin/arrivals", label: "Kedatangan", icon: "assignment_turned_in", roles: ALL, section: "OPERASIONAL" },
@@ -83,7 +83,6 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}>
         <div className="flex flex-col min-h-0 flex-1 pb-4">
-          {/* Brand Header */}
           <div className="h-16 px-4 flex items-center gap-3 bg-slate-900 shrink-0 border-b border-slate-800">
             <img alt="Caruhun Logo" className="h-8 w-auto object-contain" src="/images/logo.png" />
             <div className="flex flex-col overflow-hidden">
@@ -94,7 +93,6 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
             </div>
           </div>
 
-          {/* Nav Items */}
           <nav className="flex-1 px-3 space-y-5 overflow-y-auto mt-4">
             {sections.map((sectionName) => {
               const sectionItems = items.filter((i) => (i.section || "LAINNYA") === sectionName);
@@ -135,7 +133,6 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
           </nav>
         </div>
 
-        {/* Tombol Logout di Bawah Sidebar */}
         <div className="p-3 border-t border-slate-800 bg-slate-900/60">
           <button
             type="button"
