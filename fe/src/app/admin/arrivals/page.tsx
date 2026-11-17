@@ -172,7 +172,7 @@ export default function ArrivalPage() {
                       <td className="px-4 py-3.5 text-center">
                         <div className="flex items-center justify-center gap-2">
                           <Link
-                            href="/admin/pemeriksaan-kendaraan/masuk"
+                            href="/admin/inspections/masuk"
                             className="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer w-36 text-left whitespace-nowrap block">
                             Cek Fisik Masuk
                           </Link>

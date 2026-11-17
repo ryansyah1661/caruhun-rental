@@ -9,5 +9,6 @@ export function useMe() {
     queryKey: ["me"],
     queryFn: async () => (await api.get<User>("/me")).data,
     retry: false,
+    staleTime: 5 * 60 * 1000,
   });
 }

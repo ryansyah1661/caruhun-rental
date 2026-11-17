@@ -3,18 +3,50 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { api } from "@/lib/api";
 
 export default function CreateVehiclePage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Form State
+  const [name, setName] = useState("");
+  const [plateNumber, setPlateNumber] = useState("");
+  const [category, setCategory] = useState("mpv");
+  const [transmission, setTransmission] = useState("automatic");
+  const [year, setYear] = useState("2023");
+  const [dailyPrice, setDailyPrice] = useState("350000");
+  const [notes, setNotes] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    setErrorMsg(null);
+
+    // Pisahkan merk dan tipe
+    const parts = name.trim().split(" ");
+    const brand = parts[0] || "Toyota";
+    const model = parts.slice(1).join(" ") || "Unit";
+
+    try {
+      await api.post("/admin/vehicles", {
+        plate_number: plateNumber,
+        brand,
+        model,
+        category,
+        transmission,
+        year: parseInt(year, 10) || 2023,
+        daily_price: parseInt(dailyPrice, 10) || 350000,
+        status: "Tersedia",
+        notes: notes || undefined,
+      });
+
       router.push("/admin/vehicles");
-    }, 1000);
+    } catch (err: any) {
+      setErrorMsg(err.response?.data?.message || "Gagal menambahkan armada. Pastikan plat nomor belum terdaftar.");
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -43,6 +75,13 @@ export default function CreateVehiclePage() {
         </Link>
       </div>
 
+      {errorMsg && (
+        <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-700 flex items-center gap-2">
+          <span className="material-symbols-outlined text-[18px]">error</span>
+          <span>{errorMsg}</span>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-2xs space-y-4">
           <h2 className="font-bold text-sm text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
@@ -56,6 +95,8 @@ export default function CreateVehiclePage() {
               <input
                 type="text"
                 required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 placeholder="Contoh: Toyota Avanza 1.5 G"
                 className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900 focus:outline-none focus:border-amber-600"
               />
@@ -66,14 +107,19 @@ export default function CreateVehiclePage() {
               <input
                 type="text"
                 required
+                value={plateNumber}
+                onChange={(e) => setPlateNumber(e.target.value.toUpperCase())}
                 placeholder="Contoh: B 1482 KFD"
-                className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900 focus:outline-none focus:border-amber-600"
+                className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900 uppercase focus:outline-none focus:border-amber-600"
               />
             </div>
 
             <div className="space-y-1.5">
               <label className="block text-xs font-bold text-slate-700">Kategori Kendaraan</label>
-              <select className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900 focus:outline-none focus:border-amber-600">
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900 focus:outline-none focus:border-amber-600">
                 <option value="mpv">MPV 7-Seater</option>
                 <option value="suv">SUV / Premium</option>
                 <option value="city">City Car</option>
@@ -83,8 +129,11 @@ export default function CreateVehiclePage() {
 
             <div className="space-y-1.5">
               <label className="block text-xs font-bold text-slate-700">Transmisi</label>
-              <select className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900 focus:outline-none focus:border-amber-600">
-                <option value="matic">Matic / CVT</option>
+              <select
+                value={transmission}
+                onChange={(e) => setTransmission(e.target.value)}
+                className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900 focus:outline-none focus:border-amber-600">
+                <option value="automatic">Matic / CVT</option>
                 <option value="manual">Manual</option>
               </select>
             </div>
@@ -93,16 +142,32 @@ export default function CreateVehiclePage() {
               <label className="block text-xs font-bold text-slate-700">Tahun Pembuatan</label>
               <input
                 type="number"
+                value={year}
+                onChange={(e) => setYear(e.target.value)}
                 placeholder="2023"
                 className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900 focus:outline-none focus:border-amber-600"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-700">Odometer Awal (Km)</label>
+              <label className="block text-xs font-bold text-slate-700">Tarif Sewa / Hari (Rp)</label>
+              <input
+                type="number"
+                required
+                value={dailyPrice}
+                onChange={(e) => setDailyPrice(e.target.value)}
+                placeholder="350000"
+                className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900 focus:outline-none focus:border-amber-600"
+              />
+            </div>
+
+            <div className="space-y-1.5 sm:col-span-2 lg:col-span-3">
+              <label className="block text-xs font-bold text-slate-700">Catatan Tambahan (Opsional)</label>
               <input
                 type="text"
-                placeholder="Contoh: 15000 km"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Misal: Warna hitam metalik, interior fabric, audio Bluetooth"
                 className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900 focus:outline-none focus:border-amber-600"
               />
             </div>

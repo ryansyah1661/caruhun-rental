@@ -3,18 +3,39 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { api } from "@/lib/api";
 
 export default function CreateCustomerPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Form State
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [nik, setNik] = useState("");
+  const [address, setAddress] = useState("");
+  const [notes, setNotes] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    setErrorMsg(null);
+
+    try {
+      await api.post("/admin/customers", {
+        name,
+        phone,
+        nik: nik || undefined,
+        address: address || undefined,
+        notes: notes || undefined,
+      });
+
       router.push("/admin/customers");
-    }, 1000);
+    } catch (err: any) {
+      setErrorMsg(err.response?.data?.message || "Gagal mendaftarkan pelanggan baru. Periksa kembali isian form.");
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -43,6 +64,13 @@ export default function CreateCustomerPage() {
         </Link>
       </div>
 
+      {errorMsg && (
+        <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-700 flex items-center gap-2">
+          <span className="material-symbols-outlined text-[18px]">error</span>
+          <span>{errorMsg}</span>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-2xs space-y-4">
           <h2 className="font-bold text-sm text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
@@ -56,6 +84,8 @@ export default function CreateCustomerPage() {
               <input
                 type="text"
                 required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 placeholder="Contoh: Rendi Pratama"
                 className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900 focus:outline-none focus:border-amber-600"
               />
@@ -66,6 +96,8 @@ export default function CreateCustomerPage() {
               <input
                 type="text"
                 required
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
                 placeholder="081234567890"
                 className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900 focus:outline-none focus:border-amber-600"
               />
@@ -75,7 +107,8 @@ export default function CreateCustomerPage() {
               <label className="block text-xs font-bold text-slate-700">Nomor NIK KTP</label>
               <input
                 type="text"
-                required
+                value={nik}
+                onChange={(e) => setNik(e.target.value)}
                 placeholder="327xxxxxxxxxxxxx"
                 className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900 focus:outline-none focus:border-amber-600"
               />
@@ -85,17 +118,22 @@ export default function CreateCustomerPage() {
               <label className="block text-xs font-bold text-slate-700">Alamat Domisili</label>
               <input
                 type="text"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
                 placeholder="Jl. Margonda Raya No. 10, Depok"
                 className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900 focus:outline-none focus:border-amber-600"
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-700">Status Akun</label>
-              <select className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900 focus:outline-none focus:border-amber-600">
-                <option value="aktif">Aktif (Terverifikasi)</option>
-                <option value="blacklist">Blacklist</option>
-              </select>
+            <div className="space-y-1.5 sm:col-span-2 lg:col-span-3">
+              <label className="block text-xs font-bold text-slate-700">Catatan Khusus (Opsional)</label>
+              <input
+                type="text"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Misal: Pelanggan loyal perusahaan, minta unit selalu bersih"
+                className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900 focus:outline-none focus:border-amber-600"
+              />
             </div>
           </div>
         </div>

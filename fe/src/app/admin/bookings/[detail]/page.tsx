@@ -170,7 +170,7 @@ export default function BookingDetailPage() {
             <h2 className="font-bold text-sm text-slate-900 border-b border-slate-100 pb-3">Aksi Cepat Admin</h2>
 
             <Link
-              href="/admin/pemeriksaan-kendaraan/keluar"
+              href="/admin/inspections/keluar"
               className="w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all text-center">
               <span className="material-symbols-outlined text-[18px]">key</span>
               <span>Proses Serah Terima (Check-out)</span>

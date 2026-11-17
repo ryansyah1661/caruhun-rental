@@ -454,7 +454,7 @@ export default function BookingCalendarPage() {
             {/* Action Buttons */}
             <div className="space-y-2.5 pt-2">
               <Link
-                href="/admin/pemeriksaan-kendaraan/keluar"
+                href="/admin/inspections/keluar"
                 className="w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer">
                 <span className="material-symbols-outlined text-[18px]">key</span>
                 <span>Mulai Serah Terima Armada</span>

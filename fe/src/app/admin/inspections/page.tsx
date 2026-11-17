@@ -42,13 +42,13 @@ export default function PemeriksaanKendaraanPage() {
 
         <div className="flex items-center gap-2 flex-wrap">
           <Link
-            href="/admin/pemeriksaan-kendaraan/keluar"
+            href="/admin/inspections/keluar"
             className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-2 shadow-sm transition-all cursor-pointer">
             <span className="material-symbols-outlined text-[18px]">logout</span>
             <span>+ Pemeriksaan Keluar</span>
           </Link>
           <Link
-            href="/admin/pemeriksaan-kendaraan/masuk"
+            href="/admin/inspections/masuk"
             className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center gap-2 shadow-sm transition-all cursor-pointer">
             <span className="material-symbols-outlined text-[18px]">login</span>
             <span>+ Catat Masuk</span>

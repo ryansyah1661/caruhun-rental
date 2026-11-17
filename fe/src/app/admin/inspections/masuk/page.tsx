@@ -38,7 +38,7 @@ export default function CheckInReturnPage() {
           </p>
         </div>
         <Link
-          href="/admin"
+          href="/admin/inspections"
           className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center gap-2 transition-colors">
           <span className="material-symbols-outlined text-[18px]">arrow_back</span>
           <span>Kembali</span>

@@ -1,31 +1,29 @@
 <?php
 
+use App\Http\Controllers\Api\AdminArrivalController;
+use App\Http\Controllers\Api\AdminAttendanceController;
+use App\Http\Controllers\Api\AdminBookingController;
+use App\Http\Controllers\Api\AdminClaimController;
+use App\Http\Controllers\Api\AdminContentController;
+use App\Http\Controllers\Api\AdminCustomerController;
+use App\Http\Controllers\Api\AdminDashboardController;
+use App\Http\Controllers\Api\AdminDepartureController;
+use App\Http\Controllers\Api\AdminInspectionController;
+use App\Http\Controllers\Api\AdminRentalHistoryController;
+use App\Http\Controllers\Api\AdminUserController;
+use App\Http\Controllers\Api\AdminVehicleController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PublicContentController;
-use App\Http\Controllers\Api\AdminContentController;
-use App\Http\Controllers\Api\AdminDashboardController;
-use App\Http\Controllers\Api\AdminBookingController;
-use App\Http\Controllers\Api\AdminDepartureController;
-use App\Http\Controllers\Api\AdminArrivalController;
-use App\Http\Controllers\Api\AdminRentalHistoryController;
-use App\Http\Controllers\Api\AdminVehicleController;
-use App\Http\Controllers\Api\AdminCustomerController;
-use App\Http\Controllers\Api\AdminInspectionController;
-use App\Http\Controllers\Api\AdminClaimController;
-use App\Http\Controllers\Api\AdminUserController;
-use App\Http\Controllers\Api\AdminAttendanceController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/ping', fn() => ['ok' => true]);
+// Public Endpoints
+Route::get('/catalog', [PublicContentController::class, 'catalog']);
+Route::get('/page-content/{slug}', [PublicContentController::class, 'getPageContent']);
+
+// Authentication
 Route::post('/login', [AuthController::class, 'login']);
 
-// Route Publik
-Route::prefix('public')->group(function () {
-    Route::get('/pages/{slug}', [PublicContentController::class, 'page']);
-    Route::get('/vehicles', [PublicContentController::class, 'vehicles']);
-});
-
-// Route Admin (Terproteksi Sanctum)
+// Protected Admin Routes (Sanctum)
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::put('/profile', [AuthController::class, 'updateProfile']);
@@ -39,11 +37,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Kendaraan
     Route::get('/admin/vehicles', [AdminVehicleController::class, 'index']);
+    Route::post('/admin/vehicles', [AdminVehicleController::class, 'store']);
     Route::put('/admin/vehicles/{id}', [AdminVehicleController::class, 'update']);
     Route::delete('/admin/vehicles/{id}', [AdminVehicleController::class, 'destroy']);
 
     // Pelanggan
     Route::get('/admin/customers', [AdminCustomerController::class, 'index']);
+    Route::post('/admin/customers', [AdminCustomerController::class, 'store']);
     Route::put('/admin/customers/{id}', [AdminCustomerController::class, 'update']);
     Route::delete('/admin/customers/{id}', [AdminCustomerController::class, 'destroy']);
 

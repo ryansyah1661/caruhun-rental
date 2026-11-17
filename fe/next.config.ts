@@ -1,9 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
+  /* Matikan seluruh badge dan popup dev indicator di layar */
+  devIndicators: false,
   turbopack: {
     rules: {
       "*.css": {

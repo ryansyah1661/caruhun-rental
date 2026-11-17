@@ -1,5 +1,3 @@
-export const instant = false;
-
 import Providers from "@/components/providers";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -27,13 +25,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       translate="no"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased scroll-smooth`}>
       <head>
-        {/* CSS Material Symbols Outlined untuk Ikon */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
         />
       </head>
-      {/* Hilangkan flex & flex-col, tambahkan m-0 p-0 w-full overflow-x-hidden */}
       <body suppressHydrationWarning className="m-0 p-0 min-h-full w-full bg-surface text-on-surface overflow-x-hidden">
         <Providers>{children}</Providers>
       </body>

@@ -65,7 +65,7 @@ interface AdminSidebarProps {
 
 export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
-  const { data: me, isLoading } = useMe();
+  const { data: me } = useMe();
 
   const items = me ? ADMIN_MENU.filter((m) => m.roles.includes(me.role)) : [];
   const sections = Array.from(new Set(items.map((i) => i.section || "LAINNYA")));
@@ -75,8 +75,8 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
       {isOpen && <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={onClose} />}
 
       <aside
-        className={`fixed inset-y-0 left-0 w-64 bg-slate-900 z-50 flex flex-col justify-between overflow-y-auto transition-transform duration-200 ease-in-out border-r border-slate-800 ${
-          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        className={`fixed top-0 left-0 bottom-0 z-50 w-64 bg-slate-900 border-r border-slate-800 transition-transform duration-200 lg:translate-x-0 ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
         }`}>
         <div className="flex flex-col min-h-0 flex-1 pb-6">
           <div className="h-16 px-4 flex items-center gap-3 bg-slate-900 shrink-0 border-b border-slate-800">
@@ -113,13 +113,15 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                         key={m.href}
                         href={m.href}
                         onClick={onClose}
-                        className={`min-h-[38px] px-3 py-2 rounded-xl flex items-center gap-3 text-xs transition-colors ${
+                        className={`min-h-[38px] px-3 py-2 rounded-xl flex items-center gap-3 text-xs transition-colors overflow-hidden ${
                           active
                             ? "bg-amber-600 text-white font-extrabold shadow-sm"
                             : "font-semibold text-slate-300 hover:text-white hover:bg-slate-800/80"
                         }`}>
-                        <span className="material-symbols-outlined text-[18px]">{m.icon}</span>
-                        <span>{m.label}</span>
+                        <span className="material-symbols-outlined text-[18px] w-5 h-5 flex items-center justify-center shrink-0 overflow-hidden select-none">
+                          {m.icon}
+                        </span>
+                        <span className="truncate">{m.label}</span>
                       </Link>
                     );
                   })}

@@ -31,6 +31,30 @@ class AdminCustomerController extends Controller
         ]);
     }
 
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|max:30',
+            'nik' => 'nullable|string|max:50',
+            'address' => 'nullable|string|max:500',
+            'notes' => 'nullable|string',
+        ]);
+
+        $customer = Customer::create([
+            'name' => trim($data['name']),
+            'phone' => trim($data['phone']),
+            'id_number' => $data['nik'] ?? null,
+            'address' => $data['address'] ?? null,
+            'notes' => $data['notes'] ?? null,
+        ]);
+
+        return response()->json([
+            'message' => 'Pelanggan baru berhasil ditambahkan.',
+            'customer' => $customer,
+        ], 201);
+    }
+
     public function update(Request $request, string $id): JsonResponse
     {
         $customer = Customer::findOrFail($id);

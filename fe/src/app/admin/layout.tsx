@@ -17,13 +17,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, [isLoading, me, router]);
 
-  // Layar loading pencegah flash render
+  // Layar loading pencegah flash render (menggunakan warna tema terang agar tidak berkedip gelap saat refresh)
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-700">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
-          <span className="text-xs font-semibold text-slate-400 tracking-wide">Memeriksa autentikasi...</span>
+          <div className="w-9 h-9 border-[3.5px] border-amber-600 border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs font-bold text-slate-500 tracking-wide">Memuat sesi Caruhun...</span>
         </div>
       </div>
     );

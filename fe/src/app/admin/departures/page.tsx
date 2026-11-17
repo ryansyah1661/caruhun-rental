@@ -177,7 +177,7 @@ export default function DeparturePage() {
                       <td className="px-4 py-3.5 text-center">
                         <div className="flex items-center justify-center gap-2">
                           <Link
-                            href="/admin/pemeriksaan-kendaraan/keluar"
+                            href="/admin/inspections/keluar"
                             className="w-28 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer inline-flex items-center justify-center border border-slate-200/60">
                             Ceklis Fisik
                           </Link>
