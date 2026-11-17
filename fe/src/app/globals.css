@@ -269,3 +269,18 @@ body {
   flex-shrink: 0;
   vertical-align: middle;
 }
+
+/* ================= CUSTOM SCROLLBAR UNTUK SIDEBAR ================= */
+aside nav::-webkit-scrollbar {
+  width: 5px;
+}
+aside nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+aside nav::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 9999px;
+}
+aside nav::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}

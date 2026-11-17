@@ -4,82 +4,123 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
-use App\Models\Vehicle;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class AdminBookingController extends Controller
 {
-    public function index(Request $request): JsonResponse
+    public function index(Request $request)
     {
+        $query = Booking::with(['vehicle', 'customer'])->orderBy('start_at', 'asc');
+
+        if ($request->filled('month') && $request->filled('year')) {
+            $month = (int) $request->month;
+            $year = (int) $request->year;
+            $query->whereYear('start_at', $year)->whereMonth('start_at', $month);
+        }
+
+        $bookings = $query->get();
+
         $statusMap = [
             'confirmed' => 'Dipesan',
-            'pending' => 'Dipesan',
             'ongoing' => 'Disewa',
             'completed' => 'Selesai',
             'maintenance' => 'Servis',
-            'cancelled' => 'Selesai',
+            'cancelled' => 'Batal',
         ];
 
-        $bookings = Booking::with(['vehicle', 'customer'])
-            ->orderBy('start_at', 'desc')
-            ->get()
-            ->map(function ($b) use ($statusMap) {
-                $v = $b->vehicle;
-                $c = $b->customer;
+        $mapped = $bookings->map(function ($b) use ($statusMap) {
+            $start = Carbon::parse($b->start_at);
+            $end = Carbon::parse($b->end_at);
 
-                $start = Carbon::parse($b->start_at);
-                $end = Carbon::parse($b->end_at);
-                $diffDays = max(1, (int) round($start->floatDiffInDays($end)));
-
-                // Hitung inisial unit (e.g. "BRO", "AVZ", "ZNX", "XPD", "FTN", "HAC")
-                $modelName = $v ? $v->model : 'Mobil';
-                $words = explode(' ', $modelName);
-                $unitInitial = strtoupper(substr($words[0], 0, 3));
-                if (count($words) > 1 && strlen($unitInitial) < 3) {
-                    $unitInitial .= strtoupper(substr($words[1], 0, 1));
-                }
-
-                $statusLabel = $statusMap[$b->status] ?? 'Dipesan';
-                if ($v && $v->status === 'maintenance') {
-                    $statusLabel = 'Servis';
-                }
-
-                return [
-                    'id' => (string) $b->id,
-                    'bookingCode' => str_starts_with($b->code, '#') ? $b->code : '#' . $b->code,
-                    'renterName' => $c ? $c->name : 'Pelanggan',
-                    'renterPhone' => $c ? ($c->phone ?? '-') : '-',
-                    'isKtpVerified' => !empty($c?->id_number),
-                    'isSimActive' => true,
-                    'unitName' => $v ? $v->full_name : 'Unit Kendaraan',
-                    'unitInitial' => $unitInitial,
-                    'shortNopol' => $v ? $v->plate_number : '-',
-                    'unitSpecs' => $v ? (ucfirst($v->transmission ?? 'Matic') . ' • ' . ($v->seats ?? 7) . ' Kursi') : '-',
-                    'date' => (int) $start->day,
-                    'month' => (int) ($start->month - 1), // 0-indexed for JavaScript Date
-                    'year' => (int) $start->year,
-                    'startDateFull' => $start->translatedFormat('d M Y • H:i') . ' WIB',
-                    'endDateFull' => $end->translatedFormat('d M Y • H:i') . ' WIB',
-                    'duration' => "{$diffDays} Hari",
-                    'status' => $statusLabel,
-                    'poolLocation' => $v?->notes ?? 'Pool Utama',
-                    'adminName' => 'Admin Operasional',
-                    'category' => $v?->category ?? 'mpv',
-                ];
-            });
-
-        // Hitung total unit dan kategori
-        $totalVehicles = Vehicle::count();
-        $mpvCount = Vehicle::where('category', 'mpv')->orWhere('seats', '>=', 7)->count();
+            return [
+                'id' => $b->id,
+                'bookingCode' => $b->booking_code ?? ('#CRH-' . str_pad($b->id, 4, '0', STR_PAD_LEFT)),
+                'date' => (int) $start->format('j'),
+                'month' => ((int) $start->format('n')) - 1,
+                'year' => (int) $start->format('Y'),
+                'time' => $start->format('H:i') . ' WIB',
+                'category' => $b->vehicle->category ?? 'MPV',
+                'unitCode' => strtoupper(substr($b->vehicle->model ?? 'UNIT', 0, 3)),
+                'shortNopol' => $b->vehicle->license_plate ?? 'B 0000 XX',
+                'unitName' => trim(($b->vehicle->brand ?? '') . ' ' . ($b->vehicle->model ?? 'Armada')),
+                'renterName' => $b->customer->name ?? 'Pelanggan Caruhun',
+                'renterPhone' => $b->customer->phone ?? '08123456789',
+                'status' => $statusMap[$b->status] ?? 'Dipesan',
+                'startDateFull' => $start->translatedFormat('d M Y') . ' • ' . $start->format('H:i') . ' WIB',
+                'endDateFull' => $end->translatedFormat('d M Y') . ' • ' . $end->format('H:i') . ' WIB',
+                'duration' => $start->diffInDays($end) . ' Hari',
+                'totalAmount' => (int) ($b->total_price ?? 0),
+                'depositAmount' => (int) ($b->down_payment ?? 0),
+                'notes' => $b->notes ?? '',
+            ];
+        });
 
         return response()->json([
-            'bookings' => $bookings,
-            'counts' => [
-                'total' => $totalVehicles,
-                'mpv' => $mpvCount,
-            ]
+            'bookings' => $mapped,
+        ]);
+    }
+
+    public function show($id)
+    {
+        $booking = Booking::with(['vehicle', 'customer'])->findOrFail($id);
+
+        return response()->json([
+            'booking' => $booking,
+        ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $booking = Booking::with('customer')->findOrFail($id);
+
+        $data = $request->validate([
+            'start_at' => 'nullable|date',
+            'end_at' => 'nullable|date',
+            'status' => 'nullable|string',
+            'notes' => 'nullable|string',
+            'renter_name' => 'nullable|string|max:255',
+            'renter_phone' => 'nullable|string|max:50',
+        ]);
+
+        $statusReverse = [
+            'Dipesan' => 'confirmed',
+            'Disewa' => 'ongoing',
+            'Selesai' => 'completed',
+            'Servis' => 'maintenance',
+        ];
+
+        if (!empty($data['start_at'])) {
+            $booking->start_at = Carbon::parse($data['start_at']);
+        }
+
+        if (!empty($data['end_at'])) {
+            $booking->end_at = Carbon::parse($data['end_at']);
+        }
+
+        if (!empty($data['status'])) {
+            $booking->status = $statusReverse[$data['status']] ?? strtolower($data['status']);
+        }
+
+        if (isset($data['notes'])) {
+            $booking->notes = $data['notes'];
+        }
+
+        $booking->save();
+
+        if ($booking->customer && (!empty($data['renter_name']) || !empty($data['renter_phone']))) {
+            if (!empty($data['renter_name'])) {
+                $booking->customer->name = $data['renter_name'];
+            }
+            if (!empty($data['renter_phone'])) {
+                $booking->customer->phone = $data['renter_phone'];
+            }
+            $booking->customer->save();
+        }
+
+        return response()->json([
+            'message' => 'Data dan jadwal booking berhasil diperbarui.',
+            'booking' => $booking->load(['vehicle', 'customer']),
         ]);
     }
 }

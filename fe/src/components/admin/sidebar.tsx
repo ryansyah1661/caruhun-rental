@@ -67,7 +67,8 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
   const { data: me } = useMe();
 
-  const items = me ? ADMIN_MENU.filter((m) => m.roles.includes(me.role)) : [];
+  const userRole = me?.role || "superadmin";
+  const items = ADMIN_MENU.filter((m) => m.roles.includes(userRole));
   const sections = Array.from(new Set(items.map((i) => i.section || "LAINNYA")));
 
   return (
@@ -75,61 +76,61 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
       {isOpen && <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={onClose} />}
 
       <aside
-        className={`fixed top-0 left-0 bottom-0 z-50 w-64 bg-slate-900 border-r border-slate-800 transition-transform duration-200 lg:translate-x-0 ${
+        className={`fixed top-0 left-0 h-screen z-50 w-64 bg-slate-900 border-r border-slate-800 transition-transform duration-200 lg:translate-x-0 flex flex-col ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}>
-        <div className="flex flex-col min-h-0 flex-1 pb-6">
-          <div className="h-16 px-4 flex items-center gap-3 bg-slate-900 shrink-0 border-b border-slate-800">
-            <img alt="Caruhun Logo" className="h-8 w-auto object-contain" src="/images/logo.png" />
-            <div className="flex flex-col overflow-hidden">
-              <span className="text-sm font-extrabold text-white leading-none tracking-tight">Caruhun Trans</span>
-              <span className="text-[10px] font-bold text-amber-500 uppercase tracking-wider mt-1">
-                Management System
-              </span>
-            </div>
+        {/* Header Logo */}
+        <div className="h-16 px-4 flex items-center gap-3 bg-slate-900 shrink-0 border-b border-slate-800">
+          <img alt="Caruhun Logo" className="h-8 w-auto object-contain" src="/images/logo.png" />
+          <div className="flex flex-col overflow-hidden">
+            <span className="text-sm font-extrabold text-white leading-none tracking-tight">Caruhun Trans</span>
+            <span className="text-[10px] font-bold text-amber-500 uppercase tracking-wider mt-1">
+              Management System
+            </span>
           </div>
-
-          <nav className="flex-1 px-3 space-y-5 overflow-y-auto mt-4">
-            {sections.map((sectionName) => {
-              const sectionItems = items.filter((i) => (i.section || "LAINNYA") === sectionName);
-              if (sectionItems.length === 0) return null;
-
-              return (
-                <div key={sectionName} className="space-y-1">
-                  <div className="px-3 pb-1 flex items-center justify-between">
-                    <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
-                      {sectionName}
-                    </span>
-                  </div>
-
-                  {sectionItems.map((m) => {
-                    const active =
-                      m.href === "/admin"
-                        ? pathname === "/admin"
-                        : pathname === m.href || pathname.startsWith(`${m.href}/`);
-
-                    return (
-                      <Link
-                        key={m.href}
-                        href={m.href}
-                        onClick={onClose}
-                        className={`min-h-[38px] px-3 py-2 rounded-xl flex items-center gap-3 text-xs transition-colors overflow-hidden ${
-                          active
-                            ? "bg-amber-600 text-white font-extrabold shadow-sm"
-                            : "font-semibold text-slate-300 hover:text-white hover:bg-slate-800/80"
-                        }`}>
-                        <span className="material-symbols-outlined text-[18px] w-5 h-5 flex items-center justify-center shrink-0 overflow-hidden select-none">
-                          {m.icon}
-                        </span>
-                        <span className="truncate">{m.label}</span>
-                      </Link>
-                    );
-                  })}
-                </div>
-              );
-            })}
-          </nav>
         </div>
+
+        {/* Scrollable Navigation Menu */}
+        <nav className="flex-1 min-h-0 px-3 py-4 space-y-5 overflow-y-auto overscroll-contain">
+          {sections.map((sectionName) => {
+            const sectionItems = items.filter((i) => (i.section || "LAINNYA") === sectionName);
+            if (sectionItems.length === 0) return null;
+
+            return (
+              <div key={sectionName} className="space-y-1">
+                <div className="px-3 pb-1 flex items-center justify-between">
+                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
+                    {sectionName}
+                  </span>
+                </div>
+
+                {sectionItems.map((m) => {
+                  const active =
+                    m.href === "/admin"
+                      ? pathname === "/admin"
+                      : pathname === m.href || pathname.startsWith(`${m.href}/`);
+
+                  return (
+                    <Link
+                      key={m.href}
+                      href={m.href}
+                      onClick={onClose}
+                      className={`min-h-[38px] px-3 py-2 rounded-xl flex items-center gap-3 text-xs transition-colors overflow-hidden ${
+                        active
+                          ? "bg-amber-600 text-white font-extrabold shadow-sm"
+                          : "font-semibold text-slate-300 hover:text-white hover:bg-slate-800/80"
+                      }`}>
+                      <span className="material-symbols-outlined text-[18px] w-5 h-5 flex items-center justify-center shrink-0 overflow-hidden select-none">
+                        {m.icon}
+                      </span>
+                      <span className="truncate">{m.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </nav>
       </aside>
     </>
   );

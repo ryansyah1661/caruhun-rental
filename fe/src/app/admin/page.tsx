@@ -97,7 +97,6 @@ export default function Dashboard() {
               {greeting}, {user?.name || "Admin"}
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 mt-1.5 flex items-center gap-2">
-              <span className="material-symbols-outlined text-[16px] text-amber-600">schedule</span>
               <span>Ringkasan Operasional Rental ({currentDateFormatted})</span>
             </p>
           </div>
@@ -152,7 +151,7 @@ export default function Dashboard() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
             <div>
               <h2 className="text-base font-extrabold text-slate-900">Monitoring Armada Real-Time</h2>
-              <p className="text-xs text-slate-500">Pantau ketersediaan armada langsung dari database PostgreSQL</p>
+              <p className="text-xs text-slate-500">Pantau ketersediaan armada langsung.</p>
             </div>
             <div className="w-full sm:w-72">
               <input

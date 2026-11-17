@@ -10,12 +10,13 @@ export interface CalendarBooking {
   bookingCode: string;
   renterName: string;
   renterPhone: string;
-  isKtpVerified: boolean;
-  isSimActive: boolean;
+  isKtpVerified?: boolean;
+  isSimActive?: boolean;
   unitName: string;
-  unitInitial: string;
+  unitInitial?: string;
+  unitCode?: string;
   shortNopol: string;
-  unitSpecs: string;
+  unitSpecs?: string;
   date: number;
   month: number; // 0 = Januari, ..., 9 = Oktober, 10 = November
   year: number;
@@ -23,8 +24,8 @@ export interface CalendarBooking {
   endDateFull: string;
   duration: string;
   status: UnitStatus;
-  poolLocation: string;
-  adminName: string;
+  poolLocation?: string;
+  adminName?: string;
   category?: string;
 }
 
