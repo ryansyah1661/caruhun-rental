@@ -52,5 +52,8 @@ class DatabaseSeeder extends Seeder
                 'role' => 'superadmin',
             ]
         );
+
+        // 4. Data Demo Armada Kendaraan, Pelanggan, Paket Sewa & Booking
+        $this->call(DemoDataSeeder::class);
     }
 }

@@ -16,9 +16,11 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PublicContentController;
 use Illuminate\Support\Facades\Route;
 
-// Public Endpoints
-Route::get('/catalog', [PublicContentController::class, 'catalog']);
-Route::get('/page-content/{slug}', [PublicContentController::class, 'getPageContent']);
+// Public Endpoints (Katalog & Konten)
+Route::get('/public/vehicles', [PublicContentController::class, 'vehicles']);
+Route::get('/public/pages/{slug}', [PublicContentController::class, 'page']);
+Route::get('/catalog', [PublicContentController::class, 'vehicles']);
+Route::get('/page-content/{slug}', [PublicContentController::class, 'page']);
 
 // Authentication
 Route::post('/login', [AuthController::class, 'login']);
