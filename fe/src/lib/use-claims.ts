@@ -6,17 +6,31 @@ import { api } from "@/lib/api";
 export interface ClaimItem {
   id: string;
   code: string;
+  bookingCode?: string | null;
+  vehicleId?: string | null;
   unit: string;
   nopol: string;
   issue: string;
   reporter: string;
+  reporterPhone?: string;
+  estimatedCost?: number;
+  photo?: string | null;
   date: string;
   status: "Pending" | "Dalam Perbaikan" | "Selesai";
+  source?: string;
+}
+
+export interface ClaimStats {
+  total: number;
+  pending: number;
+  inRepair: number;
+  resolved: number;
 }
 
 export interface ClaimResponse {
   claims: ClaimItem[];
   total: number;
+  stats?: ClaimStats;
 }
 
 export function useClaims() {

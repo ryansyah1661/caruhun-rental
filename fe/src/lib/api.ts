@@ -12,9 +12,9 @@ api.interceptors.request.use((config) => {
     const token = localStorage.getItem(TOKEN_KEY);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      // Sinkronkan cookie secara otomatis jika belum ada
+      // Sinkronkan cookie secara otomatis jika belum ada (default 8 jam / 28800s)
       if (!document.cookie.includes(`${TOKEN_KEY}=`)) {
-        document.cookie = `${TOKEN_KEY}=${token}; path=/; max-age=604800; SameSite=Lax`;
+        document.cookie = `${TOKEN_KEY}=${token}; path=/; max-age=28800; SameSite=Lax`;
       }
     }
   }

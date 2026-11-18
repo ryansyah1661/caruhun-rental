@@ -50,7 +50,7 @@ return [
     |
     */
 
-    'expiration' => null,
+    'expiration' => 480, // 8 Jam (Standar 1 Shift Operasional Rental)
 
     /*
     |--------------------------------------------------------------------------

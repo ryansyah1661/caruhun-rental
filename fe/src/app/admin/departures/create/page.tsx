@@ -6,8 +6,6 @@ import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
-const DRIVER_OPTIONS = ["Lepas Kunci (Self-Drive)", "Driver Ditugaskan (Ahmad Sopian)", "Driver Ditugaskan (Budi Santoso)"];
-
 const TIME_SLOTS = [
   "06:00 WIB",
   "07:00 WIB",
@@ -37,7 +35,6 @@ export default function DepartureCreatePage() {
     queryKey: ["admin", "vehicles", "list"],
     queryFn: async () => {
       const res = await api.get("/admin/vehicles");
-      // Extract array dari res.data.vehicles atau format lainnya
       const rawList = res.data?.vehicles || (Array.isArray(res.data) ? res.data : res.data?.data || []);
       return rawList.map((v: { id?: string; name?: string; brand?: string; model?: string; nopol?: string; plate_number?: string; full_name?: string }) => ({
         id: v.id || "",
@@ -49,6 +46,9 @@ export default function DepartureCreatePage() {
 
   const carOptions = vehiclesData && vehiclesData.length > 0 ? vehiclesData : [];
 
+  // Pilihan Kategori Layanan: Lepas Kunci, Dengan Driver, Drop-off Bandara
+  const [serviceType, setServiceType] = useState<"Lepas Kunci" | "Dengan Driver" | "Drop-off Bandara">("Lepas Kunci");
+
   const [formData, setFormData] = useState({
     bookingCode: `CRH-${Math.floor(1000 + Math.random() * 9000)}`,
     vehicleId: "",
@@ -59,6 +59,7 @@ export default function DepartureCreatePage() {
     departureDate: "Hari Ini",
     departureTime: "08:00 WIB",
     driverName: "Lepas Kunci (Self-Drive)",
+    flightInfo: "",
     notes: "",
   });
 
@@ -73,9 +74,33 @@ export default function DepartureCreatePage() {
     }
   }, [carOptions, formData.vehicleId]);
 
+  // Sesuaikan nilai default saat berganti Jenis Layanan
+  const handleSelectServiceType = (type: "Lepas Kunci" | "Dengan Driver" | "Drop-off Bandara") => {
+    setServiceType(type);
+    if (type === "Lepas Kunci") {
+      setFormData((prev) => ({
+        ...prev,
+        driverName: "Lepas Kunci (Self-Drive)",
+        destination: "Dalam Kota / Bandung Area",
+      }));
+    } else if (type === "Dengan Driver") {
+      setFormData((prev) => ({
+        ...prev,
+        driverName: "Driver Ditugaskan (Ahmad Sopian)",
+        destination: "Rute Perjalanan Dinas / Wisata Luar Kota",
+      }));
+    } else if (type === "Drop-off Bandara") {
+      setFormData((prev) => ({
+        ...prev,
+        driverName: "Driver Khusus Bandara (Budi Santoso)",
+        destination: "Bandara Internasional Soekarno-Hatta (T3)",
+        flightInfo: "GA-402 (Garuda Indonesia)",
+      }));
+    }
+  };
+
   // State untuk dropdown dan pop-up
   const [showCarDropdown, setShowCarDropdown] = useState(false);
-  const [showDriverDropdown, setShowDriverDropdown] = useState(false);
   const [showTimePopup, setShowTimePopup] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -98,12 +123,21 @@ export default function DepartureCreatePage() {
 
     setIsSubmitting(true);
     try {
+      let finalNotes = formData.destination;
+      if (serviceType === "Drop-off Bandara" && formData.flightInfo) {
+        finalNotes += ` [Flight: ${formData.flightInfo}]`;
+      }
+      if (formData.notes) {
+        finalNotes += ` - ${formData.notes}`;
+      }
+
       const payload = {
-        vehicle_id: formData.vehicleId || carOptions[0]?.id,
+        vehicle_id: formData.vehicleId || (carOptions[0]?.id || null),
         customer_name: formData.renterName,
         customer_phone: formData.renterPhone,
-        notes: `${formData.destination}${formData.notes ? " - " + formData.notes : ""}`,
-        with_driver: formData.driverName.includes("Driver Ditugaskan"),
+        service_type: serviceType,
+        notes: finalNotes,
+        with_driver: serviceType !== "Lepas Kunci",
       };
 
       await api.post("/admin/departures", payload);
@@ -111,7 +145,7 @@ export default function DepartureCreatePage() {
       setToast({
         show: true,
         type: "success",
-        message: "Jadwal keberangkatan berhasil disimpan ke database!",
+        message: `Jadwal keberangkatan [${serviceType}] berhasil disimpan ke database!`,
       });
 
       setTimeout(() => {
@@ -160,7 +194,7 @@ export default function DepartureCreatePage() {
             Input Jadwal Keberangkatan Baru
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Buat data pelepasan unit baru ke lapangan sebelum melakukan ceklis fisik dan serah terima kunci.
+            Pilih kategori layanan: <strong>Lepas Kunci</strong>, <strong>Dengan Driver</strong>, atau <strong>Drop-off Bandara</strong> agar SOP dan kelengkapannya sesuai.
           </p>
         </div>
 
@@ -171,6 +205,84 @@ export default function DepartureCreatePage() {
             <span className="material-symbols-outlined text-[18px]">arrow_back</span>
             <span>Kembali ke Daftar</span>
           </Link>
+        </div>
+      </div>
+
+      {/* ================= 3 KARTU PILIHAN KATEGORI LAYANAN ================= */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Pilihan 1: Lepas Kunci */}
+        <div
+          onClick={() => handleSelectServiceType("Lepas Kunci")}
+          className={`p-5 rounded-2xl border cursor-pointer transition-all ${
+            serviceType === "Lepas Kunci"
+              ? "bg-amber-50/70 border-amber-500 ring-2 ring-amber-500 shadow-xs"
+              : "bg-white border-slate-200/80 hover:border-slate-300"
+          }`}>
+          <div className="flex items-center justify-between mb-2">
+            <span className="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
+              <span className="material-symbols-outlined text-[20px]">key</span>
+            </span>
+            <span
+              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                serviceType === "Lepas Kunci" ? "border-amber-600 bg-amber-600" : "border-slate-300 bg-white"
+              }`}>
+              {serviceType === "Lepas Kunci" && <span className="w-2 h-2 rounded-full bg-white" />}
+            </span>
+          </div>
+          <h4 className="font-extrabold text-sm text-slate-900">1. Sewa Lepas Kunci (Self-Drive)</h4>
+          <p className="text-[11px] text-slate-500 mt-1">
+            Penyewa membawa unit sendiri. Wajib upload KTP, SIM A, data darurat & jaminan motor/deposit.
+          </p>
+        </div>
+
+        {/* Pilihan 2: Dengan Driver */}
+        <div
+          onClick={() => handleSelectServiceType("Dengan Driver")}
+          className={`p-5 rounded-2xl border cursor-pointer transition-all ${
+            serviceType === "Dengan Driver"
+              ? "bg-sky-50/70 border-sky-500 ring-2 ring-sky-500 shadow-xs"
+              : "bg-white border-slate-200/80 hover:border-slate-300"
+          }`}>
+          <div className="flex items-center justify-between mb-2">
+            <span className="w-9 h-9 rounded-xl bg-sky-100 text-sky-800 flex items-center justify-center font-bold">
+              <span className="material-symbols-outlined text-[20px]">person_pin</span>
+            </span>
+            <span
+              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                serviceType === "Dengan Driver" ? "border-sky-600 bg-sky-600" : "border-slate-300 bg-white"
+              }`}>
+              {serviceType === "Dengan Driver" && <span className="w-2 h-2 rounded-full bg-white" />}
+            </span>
+          </div>
+          <h4 className="font-extrabold text-sm text-slate-900">2. Sewa Dengan Supir (Include Driver)</h4>
+          <p className="text-[11px] text-slate-500 mt-1">
+            Armada dikemudikan oleh supir resmi Caruhun. Bebas jaminan motor/deposit 1.5jt.
+          </p>
+        </div>
+
+        {/* Pilihan 3: Drop-off Bandara */}
+        <div
+          onClick={() => handleSelectServiceType("Drop-off Bandara")}
+          className={`p-5 rounded-2xl border cursor-pointer transition-all ${
+            serviceType === "Drop-off Bandara"
+              ? "bg-indigo-50/70 border-indigo-500 ring-2 ring-indigo-500 shadow-xs"
+              : "bg-white border-slate-200/80 hover:border-slate-300"
+          }`}>
+          <div className="flex items-center justify-between mb-2">
+            <span className="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-800 flex items-center justify-center font-bold">
+              <span className="material-symbols-outlined text-[20px]">flight_takeoff</span>
+            </span>
+            <span
+              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                serviceType === "Drop-off Bandara" ? "border-indigo-600 bg-indigo-600" : "border-slate-300 bg-white"
+              }`}>
+              {serviceType === "Drop-off Bandara" && <span className="w-2 h-2 rounded-full bg-white" />}
+            </span>
+          </div>
+          <h4 className="font-extrabold text-sm text-slate-900">3. Drop-off / Antar Jemput Bandara</h4>
+          <p className="text-[11px] text-slate-500 mt-1">
+            Layanan khusus antar/jemput penerbangan bandara point-to-point dengan jadwal flight.
+          </p>
         </div>
       </div>
 
@@ -201,11 +313,7 @@ export default function DepartureCreatePage() {
               <div className="space-y-1.5 relative">
                 <label className="text-xs font-bold text-slate-700">Unit Armada Pool</label>
                 <div
-                  onClick={() => {
-                    setShowCarDropdown(!showCarDropdown);
-                    setShowDriverDropdown(false);
-                    setShowTimePopup(false);
-                  }}
+                  onClick={() => setShowCarDropdown(!showCarDropdown)}
                   className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 flex items-center justify-between cursor-pointer hover:border-amber-500 transition-all">
                   <span className="truncate">{formData.unitName}</span>
                   <span className="material-symbols-outlined text-slate-400 text-[20px]">expand_more</span>
@@ -250,7 +358,7 @@ export default function DepartureCreatePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">Nama Penyewa / Perusahaan</label>
+                <label className="text-xs font-bold text-slate-700">Nama Penyewa / Tamu</label>
                 <input
                   type="text"
                   placeholder="Contoh: Bapak Rizky Kurniawan"
@@ -262,7 +370,7 @@ export default function DepartureCreatePage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">Nomor WhatsApp / Telepon</label>
+                <label className="text-xs font-bold text-slate-700">Nomor WhatsApp / Kontak</label>
                 <input
                   type="text"
                   placeholder="Contoh: 081234567890"
@@ -281,15 +389,21 @@ export default function DepartureCreatePage() {
           <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-2xs space-y-4">
             <h3 className="font-bold text-base text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
               <span className="material-symbols-outlined text-amber-600">schedule</span>
-              3. Jadwal & Penugasan
+              3. Jadwal & Rute ({serviceType})
             </h3>
 
             <div className="space-y-3 text-xs">
               <div className="space-y-1.5">
-                <label className="font-bold text-slate-700">Tujuan Perjalanan</label>
+                <label className="font-bold text-slate-700">
+                  {serviceType === "Drop-off Bandara" ? "Bandara & Terminal Tujuan" : "Rute / Tujuan Perjalanan"}
+                </label>
                 <input
                   type="text"
-                  placeholder="Contoh: Rute Bandung & Wisata Lembang"
+                  placeholder={
+                    serviceType === "Drop-off Bandara"
+                      ? "Contoh: Bandara Soekarno-Hatta T3"
+                      : "Contoh: Dalam Kota Bandung & Lembang"
+                  }
                   value={formData.destination}
                   onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
                   className="w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 font-medium text-slate-900 focus:outline-none focus:border-amber-500 transition-all"
@@ -297,15 +411,25 @@ export default function DepartureCreatePage() {
                 />
               </div>
 
+              {/* Input Nomor Penerbangan jika Bandara */}
+              {serviceType === "Drop-off Bandara" && (
+                <div className="space-y-1.5">
+                  <label className="font-bold text-slate-700">Kode & Nomor Penerbangan (Opsional)</label>
+                  <input
+                    type="text"
+                    placeholder="Contoh: GA-402 / QZ-753"
+                    value={formData.flightInfo}
+                    onChange={(e) => setFormData({ ...formData, flightInfo: e.target.value })}
+                    className="w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 font-mono font-medium text-slate-900 focus:outline-none focus:border-amber-500 transition-all"
+                  />
+                </div>
+              )}
+
               {/* Pilihan Waktu Jam */}
               <div className="space-y-1.5 relative">
-                <label className="font-bold text-slate-700">Estimasi Jam Keluar</label>
+                <label className="font-bold text-slate-700">Estimasi Jam Keberangkatan / Jemput</label>
                 <div
-                  onClick={() => {
-                    setShowTimePopup(!showTimePopup);
-                    setShowCarDropdown(false);
-                    setShowDriverDropdown(false);
-                  }}
+                  onClick={() => setShowTimePopup(!showTimePopup)}
                   className="w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 font-medium text-slate-900 flex items-center justify-between cursor-pointer hover:border-amber-500 transition-all">
                   <span className="truncate">{formData.departureTime}</span>
                   <span className="material-symbols-outlined text-slate-400 text-[18px]">schedule</span>
@@ -332,46 +456,17 @@ export default function DepartureCreatePage() {
                 )}
               </div>
 
-              {/* Pilihan Penugasan Driver */}
-              <div className="space-y-1.5 relative">
-                <label className="font-bold text-slate-700">Penugasan Driver / Layanan</label>
-                <div
-                  onClick={() => {
-                    setShowDriverDropdown(!showDriverDropdown);
-                    setShowCarDropdown(false);
-                    setShowTimePopup(false);
-                  }}
-                  className="w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 font-bold text-slate-900 flex items-center justify-between cursor-pointer hover:border-amber-500 transition-all">
-                  <span className="truncate">{formData.driverName}</span>
-                  <span className="material-symbols-outlined text-slate-400 text-[18px]">expand_more</span>
-                </div>
-
-                {showDriverDropdown && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl border border-slate-200 shadow-xl p-2 z-50 space-y-1 max-h-60 overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
-                    {DRIVER_OPTIONS.map((driver, idx) => (
-                      <div
-                        key={idx}
-                        onClick={() => {
-                          setFormData({ ...formData, driverName: driver });
-                          setShowDriverDropdown(false);
-                        }}
-                        className={`p-2.5 rounded-xl text-xs font-bold cursor-pointer transition-all ${
-                          formData.driverName === driver
-                            ? "bg-amber-600 text-white shadow-xs"
-                            : "bg-slate-50 text-slate-700 hover:bg-slate-100"
-                        }`}>
-                        {driver}
-                      </div>
-                    ))}
-                  </div>
-                )}
+              {/* Status Penugasan Driver */}
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 space-y-1">
+                <span className="text-[11px] font-bold text-slate-500 block">Status Pengemudi</span>
+                <span className="font-bold text-slate-900 block">{formData.driverName}</span>
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-bold text-slate-700">Catatan Tambahan</label>
+                <label className="font-bold text-slate-700">Catatan Khusus</label>
                 <textarea
-                  rows={3}
-                  placeholder="Catatan khusus untuk serah terima..."
+                  rows={2}
+                  placeholder="Catatan titik jemput, request khusus, dll..."
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   className="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 font-medium text-slate-900 focus:outline-none focus:border-amber-500 transition-all"
@@ -379,13 +474,13 @@ export default function DepartureCreatePage() {
               </div>
             </div>
 
-            <div className="pt-3">
+            <div className="pt-2">
               <button
                 type="submit"
                 disabled={isSubmitting}
                 className="w-full py-3.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer disabled:opacity-60">
                 <span className="material-symbols-outlined text-[18px]">add_box</span>
-                <span>{isSubmitting ? "Menyimpan Jadwal..." : "Buat & Simpan Keberangkatan"}</span>
+                <span>{isSubmitting ? "Menyimpan Jadwal..." : `Buat Jadwal ${serviceType}`}</span>
               </button>
             </div>
           </div>

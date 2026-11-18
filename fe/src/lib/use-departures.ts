@@ -15,6 +15,7 @@ export interface DepartureItem {
   destination: string;
   departureTime: string;
   driverName: string;
+  serviceType?: "Lepas Kunci" | "Dengan Driver" | "Drop-off Bandara" | string;
   status: DepartureStatus;
 }
 

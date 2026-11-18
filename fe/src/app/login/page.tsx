@@ -12,6 +12,7 @@ import { api, TOKEN_KEY } from "@/lib/api";
 const schema = z.object({
   email: z.string().email("Format email tidak valid"),
   password: z.string().min(1, "Kata sandi wajib diisi"),
+  rememberMe: z.boolean().optional(),
 });
 type FormValues = z.infer<typeof schema>;
 
@@ -25,16 +26,27 @@ export default function LoginPage() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<FormValues>({ resolver: zodResolver(schema) });
+  } = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: { rememberMe: false },
+  });
 
   async function onSubmit(values: FormValues) {
     setError(null);
     try {
-      const { data } = await api.post<{ token: string }>("/login", values);
+      const { data } = await api.post<{ token: string }>("/login", {
+        email: values.email,
+        password: values.password,
+      });
 
-      // Simpan di localStorage dan Cookie untuk middleware
+      // Simpan di localStorage
       localStorage.setItem(TOKEN_KEY, data.token);
-      document.cookie = `${TOKEN_KEY}=${data.token}; path=/; max-age=604800; SameSite=Lax`;
+
+      // Durasi Cookie:
+      // Jika "Ingat Saya" dicentang: 7 Hari (604800 detik)
+      // Jika tidak dicentang (standar): 8 Jam / 1 shift kerja (28800 detik)
+      const maxAge = values.rememberMe ? 604800 : 28800;
+      document.cookie = `${TOKEN_KEY}=${data.token}; path=/; max-age=${maxAge}; SameSite=Lax`;
 
       qc.clear();
       router.replace("/admin");
@@ -109,6 +121,18 @@ export default function LoginPage() {
               {errors.password && (
                 <p className="text-[11px] font-semibold text-rose-600 mt-1">{errors.password.message}</p>
               )}
+            </div>
+
+            {/* Opsi Ingat Saya */}
+            <div className="flex items-center justify-between pt-1">
+              <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-600 select-none">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 rounded text-amber-600 border-slate-300 focus:ring-amber-500 accent-amber-600"
+                  {...register("rememberMe")}
+                />
+                <span>Ingat saya</span>
+              </label>
             </div>
 
             <button

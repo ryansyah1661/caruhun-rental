@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\AdminContentController;
 use App\Http\Controllers\Api\AdminCustomerController;
 use App\Http\Controllers\Api\AdminDashboardController;
 use App\Http\Controllers\Api\AdminDepartureController;
+use App\Http\Controllers\Api\AdminFinanceController;
 use App\Http\Controllers\Api\AdminInspectionController;
 use App\Http\Controllers\Api\AdminRentalHistoryController;
 use App\Http\Controllers\Api\AdminUserController;
@@ -48,6 +49,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/admin/departures/{id}', [AdminDepartureController::class, 'checkout']);
     Route::get('/admin/arrivals', [AdminArrivalController::class, 'index']);
     Route::get('/admin/arrivals/{id}', [AdminArrivalController::class, 'show']);
+    Route::post('/admin/arrivals/{id}/checkin', [AdminArrivalController::class, 'checkin']);
+    Route::post('/admin/arrivals/{id}', [AdminArrivalController::class, 'checkin']);
 
     // Admin Inspeksi Lapangan
     Route::get('/admin/inspections', [AdminInspectionController::class, 'index']);
@@ -57,6 +60,12 @@ Route::middleware('auth:sanctum')->group(function () {
     // Admin Kerusakan & Klaim
     Route::get('/admin/claims', [AdminClaimController::class, 'index']);
     Route::post('/admin/claims', [AdminClaimController::class, 'store']);
+    Route::put('/admin/claims/{id}', [AdminClaimController::class, 'update']);
+    Route::post('/admin/claims/{id}/resolve', [AdminClaimController::class, 'resolve']);
+
+    // Admin Keuangan & Kas
+    Route::get('/admin/finance', [AdminFinanceController::class, 'index']);
+    Route::post('/admin/finance', [AdminFinanceController::class, 'store']);
 
     // Admin Riwayat Sewa
     Route::get('/admin/rentals', [AdminRentalHistoryController::class, 'index']);

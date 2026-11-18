@@ -16,6 +16,7 @@ class AdminVehicleController extends Controller
             'rented' => 'Disewa',
             'booked' => 'Dipesan',
             'maintenance' => 'Servis',
+            'washing' => 'Cuci',
         ];
 
         $vehicles = Vehicle::latest()->get()->map(function ($v) use ($statusMap) {
@@ -27,14 +28,26 @@ class AdminVehicleController extends Controller
                 'transmission' => ucfirst($v->transmission ?? 'Matic'),
                 'year' => (int) ($v->year ?? 2023),
                 'status' => $statusMap[$v->status] ?? 'Tersedia',
+                'rawStatus' => $v->status,
                 'daily_price' => (int) ($v->daily_price ?? 0),
                 'odometer' => $v->odometer ?? '0 km',
+                'notes' => $v->notes,
             ];
         });
+
+        // Hitung statistik status unit
+        $stats = [
+            'total' => $vehicles->count(),
+            'available' => $vehicles->where('status', 'Tersedia')->count(),
+            'rented' => $vehicles->where('status', 'Disewa')->count(),
+            'maintenance' => $vehicles->where('status', 'Servis')->count(),
+            'washing' => $vehicles->where('status', 'Cuci')->count(),
+        ];
 
         return response()->json([
             'vehicles' => $vehicles,
             'total' => $vehicles->count(),
+            'stats' => $stats,
         ]);
     }
 
@@ -58,6 +71,7 @@ class AdminVehicleController extends Controller
             'Disewa' => 'rented',
             'Dipesan' => 'booked',
             'Servis' => 'maintenance',
+            'Cuci' => 'washing',
         ];
 
         $status = $data['status'] ?? 'available';
@@ -90,6 +104,7 @@ class AdminVehicleController extends Controller
         $data = $request->validate([
             'status' => 'nullable|string',
             'daily_price' => 'nullable|numeric',
+            'notes' => 'nullable|string',
         ]);
 
         if (!empty($data['status'])) {
@@ -98,12 +113,17 @@ class AdminVehicleController extends Controller
                 'Disewa' => 'rented',
                 'Dipesan' => 'booked',
                 'Servis' => 'maintenance',
+                'Cuci' => 'washing',
             ];
             $vehicle->status = $reverseMap[$data['status']] ?? strtolower($data['status']);
         }
 
         if (isset($data['daily_price'])) {
             $vehicle->daily_price = (int) $data['daily_price'];
+        }
+
+        if (array_key_exists('notes', $data)) {
+            $vehicle->notes = $data['notes'];
         }
 
         $vehicle->save();
