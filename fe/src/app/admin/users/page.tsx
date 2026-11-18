@@ -173,7 +173,7 @@ export default function UsersManagementPage() {
                   <tr key={u.id} className="hover:bg-slate-50/80 divide-x divide-slate-200">
                     <td className="px-4 py-3.5 font-bold text-slate-900">{u.name}</td>
                     <td className="px-4 py-3.5 font-mono text-slate-600">{u.email}</td>
-                    <td className="px-4 py-3.5 text-center">
+                    <td className="px-4 py-3.5">
                       <span
                         className={`px-2.5 py-1 rounded-md text-[11px] font-bold border ${
                           u.role === "superadmin"
@@ -185,7 +185,7 @@ export default function UsersManagementPage() {
                         {roleLabel[u.role] || u.role}
                       </span>
                     </td>
-                    <td className="px-4 py-3.5 text-center text-slate-500">{u.createdAt}</td>
+                    <td className="px-4 py-3.5 text-slate-500">{u.createdAt}</td>
                     <td className="px-4 py-3.5 text-center">
                       <div className="flex items-center justify-center gap-1.5">
                         <button

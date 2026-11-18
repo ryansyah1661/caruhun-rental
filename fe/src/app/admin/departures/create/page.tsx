@@ -1,17 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
 
-const CAR_OPTIONS = [
-  "Toyota Avanza 1.5 G (B 1482 KFD)",
-  "Innova Zenix 2.0 V (B 2884 SSR)",
-  "Honda Brio RS (D 2091 AGH)",
-  "HiAce Commuter (B 1019 TRB)",
-];
-
-const DRIVER_OPTIONS = ["Lepas Kunci (Self-Drive)", "Ahmad Sopian", "Budi Santoso"];
+const DRIVER_OPTIONS = ["Lepas Kunci (Self-Drive)", "Driver Ditugaskan (Ahmad Sopian)", "Driver Ditugaskan (Budi Santoso)"];
 
 const TIME_SLOTS = [
   "06:00 WIB",
@@ -28,86 +23,138 @@ const TIME_SLOTS = [
   "21:00 WIB",
 ];
 
-// Data Dummy Kalender Bulan November 2026 (Sesuai Referensi)
-const DAYS_IN_NOV = [
-  { day: 26, currentMonth: false },
-  { day: 27, currentMonth: false },
-  { day: 28, currentMonth: false },
-  { day: 29, currentMonth: false },
-  { day: 30, currentMonth: false },
-  { day: 31, currentMonth: false },
-  { day: 1, currentMonth: true },
-  { day: 2, currentMonth: true },
-  { day: 3, currentMonth: true },
-  { day: 4, currentMonth: true },
-  { day: 5, currentMonth: true },
-  { day: 6, currentMonth: true },
-  { day: 7, currentMonth: true },
-  { day: 8, currentMonth: true },
-  { day: 9, currentMonth: true },
-  { day: 10, currentMonth: true },
-  { day: 11, currentMonth: true },
-  { day: 12, currentMonth: true },
-  { day: 13, currentMonth: true, selected: true },
-  { day: 14, currentMonth: true },
-  { day: 15, currentMonth: true },
-  { day: 16, currentMonth: true },
-  { day: 17, currentMonth: true },
-  { day: 18, currentMonth: true },
-  { day: 19, currentMonth: true },
-  { day: 20, currentMonth: true },
-  { day: 21, currentMonth: true },
-  { day: 22, currentMonth: true },
-  { day: 23, currentMonth: true },
-  { day: 24, currentMonth: true },
-  { day: 25, currentMonth: true },
-  { day: 26, currentMonth: true },
-  { day: 27, currentMonth: true },
-  { day: 28, currentMonth: true },
-  { day: 29, currentMonth: true },
-  { day: 30, currentMonth: true },
-  { day: 1, currentMonth: false },
-  { day: 2, currentMonth: false },
-  { day: 3, currentMonth: false },
-  { day: 4, currentMonth: false },
-  { day: 5, currentMonth: false },
-  { day: 6, currentMonth: false },
-];
+interface VehicleOption {
+  id: string;
+  name: string;
+  plateNumber: string;
+}
 
 export default function DepartureCreatePage() {
   const router = useRouter();
+
+  // Fetch real vehicles from API
+  const { data: vehiclesData } = useQuery({
+    queryKey: ["admin", "vehicles", "list"],
+    queryFn: async () => {
+      const res = await api.get("/admin/vehicles");
+      // Extract array dari res.data.vehicles atau format lainnya
+      const rawList = res.data?.vehicles || (Array.isArray(res.data) ? res.data : res.data?.data || []);
+      return rawList.map((v: { id?: string; name?: string; brand?: string; model?: string; nopol?: string; plate_number?: string; full_name?: string }) => ({
+        id: v.id || "",
+        name: v.name || v.full_name || `${v.brand || ""} ${v.model || ""}`.trim() || "Unit Kendaraan",
+        plateNumber: v.nopol || v.plate_number || "-",
+      })) as VehicleOption[];
+    },
+  });
+
+  const carOptions = vehiclesData && vehiclesData.length > 0 ? vehiclesData : [];
+
   const [formData, setFormData] = useState({
-    bookingCode: "#CRH-2410-096",
-    unitName: "Toyota Avanza 1.5 G (B 1482 KFD)",
+    bookingCode: `CRH-${Math.floor(1000 + Math.random() * 9000)}`,
+    vehicleId: "",
+    unitName: "Memuat armada...",
     renterName: "",
     renterPhone: "",
-    destination: "",
-    departureDate: "13 November 2026",
+    destination: "Dalam Kota / Bandung Area",
+    departureDate: "Hari Ini",
     departureTime: "08:00 WIB",
     driverName: "Lepas Kunci (Self-Drive)",
     notes: "",
   });
 
-  // State untuk mengontrol pop-up kustom
+  // Sinkronkan pilihan unit saat data armada termuat
+  useEffect(() => {
+    if (carOptions.length > 0 && !formData.vehicleId) {
+      setFormData((prev) => ({
+        ...prev,
+        vehicleId: carOptions[0].id,
+        unitName: `${carOptions[0].name} (${carOptions[0].plateNumber})`,
+      }));
+    }
+  }, [carOptions, formData.vehicleId]);
+
+  // State untuk dropdown dan pop-up
   const [showCarDropdown, setShowCarDropdown] = useState(false);
   const [showDriverDropdown, setShowDriverDropdown] = useState(false);
-  const [showCalendarPopup, setShowCalendarPopup] = useState(false);
   const [showTimePopup, setShowTimePopup] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // In-App Toast
+  const [toast, setToast] = useState<{ show: boolean; type: "success" | "error"; message: string } | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 3500);
+    return () => clearTimeout(timer);
+  }, [toast]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Jadwal keberangkatan baru berhasil dibuat!");
-    router.push("/admin/departures");
+
+    if (!formData.renterName.trim()) {
+      setToast({ show: true, type: "error", message: "Harap isi nama penyewa terlebih dahulu." });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        vehicle_id: formData.vehicleId || carOptions[0]?.id,
+        customer_name: formData.renterName,
+        customer_phone: formData.renterPhone,
+        notes: `${formData.destination}${formData.notes ? " - " + formData.notes : ""}`,
+        with_driver: formData.driverName.includes("Driver Ditugaskan"),
+      };
+
+      await api.post("/admin/departures", payload);
+
+      setToast({
+        show: true,
+        type: "success",
+        message: "Jadwal keberangkatan berhasil disimpan ke database!",
+      });
+
+      setTimeout(() => {
+        router.push("/admin/departures");
+      }, 1200);
+    } catch (err: unknown) {
+      const errMsg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Gagal membuat jadwal keberangkatan.";
+      setToast({ show: true, type: "error", message: errMsg });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="w-full font-body-md text-slate-800 antialiased bg-slate-50/50 min-h-screen p-6 lg:p-8 space-y-6 relative">
+      {/* ================= TOAST NOTIFIKASI ================= */}
+      {toast && (
+        <div
+          className={`fixed top-6 right-6 z-50 px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 border text-xs font-bold transition-all duration-300 animate-in fade-in slide-in-from-top-4 ${
+            toast.type === "success"
+              ? "bg-emerald-500 text-white border-emerald-600"
+              : "bg-rose-500 text-white border-rose-600"
+          }`}>
+          <span className="material-symbols-outlined text-[20px]">
+            {toast.type === "success" ? "check_circle" : "warning"}
+          </span>
+          <span>{toast.message}</span>
+          <button
+            type="button"
+            onClick={() => setToast(null)}
+            className="ml-2 hover:opacity-75 cursor-pointer">
+            <span className="material-symbols-outlined text-[16px]">close</span>
+          </button>
+        </div>
+      )}
+
       {/* ================= HEADER BAR ================= */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-2xs">
         <div>
           <div className="flex items-center gap-2 text-xs text-slate-400 mb-1 font-medium">
-            <span>Operasional</span> &rsaquo; <span>Keberangkatan</span> &rsaquo;{" "}
-            <span className="text-slate-800 font-bold">Input Baru</span>
+            <Link href="/admin/departures" className="hover:text-slate-700">Operasional</Link> &rsaquo;{" "}
+            <Link href="/admin/departures" className="hover:text-slate-700">Keberangkatan</Link> &rsaquo;{" "}
+            <span className="text-slate-800 font-bold">Input Jadwal Baru</span>
           </div>
           <h1 className="text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight">
             Input Jadwal Keberangkatan Baru
@@ -157,7 +204,6 @@ export default function DepartureCreatePage() {
                   onClick={() => {
                     setShowCarDropdown(!showCarDropdown);
                     setShowDriverDropdown(false);
-                    setShowCalendarPopup(false);
                     setShowTimePopup(false);
                   }}
                   className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 flex items-center justify-between cursor-pointer hover:border-amber-500 transition-all">
@@ -167,19 +213,26 @@ export default function DepartureCreatePage() {
 
                 {showCarDropdown && (
                   <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl border border-slate-200 shadow-xl p-2 z-50 space-y-1 max-h-60 overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
-                    {CAR_OPTIONS.map((car, idx) => (
+                    {carOptions.map((car) => (
                       <div
-                        key={idx}
+                        key={car.id}
                         onClick={() => {
-                          setFormData({ ...formData, unitName: car });
+                          setFormData({
+                            ...formData,
+                            vehicleId: car.id,
+                            unitName: `${car.name} (${car.plateNumber})`,
+                          });
                           setShowCarDropdown(false);
                         }}
                         className={`p-3 rounded-xl text-xs font-bold cursor-pointer transition-all ${
-                          formData.unitName === car
+                          formData.vehicleId === car.id
                             ? "bg-amber-600 text-white shadow-xs"
                             : "bg-slate-50 text-slate-700 hover:bg-slate-100"
                         }`}>
-                        {car}
+                        <div className="font-extrabold">{car.name}</div>
+                        <div className={`text-[10px] font-mono mt-0.5 ${formData.vehicleId === car.id ? "text-amber-100" : "text-slate-500"}`}>
+                          Plat: {car.plateNumber}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -200,7 +253,7 @@ export default function DepartureCreatePage() {
                 <label className="text-xs font-bold text-slate-700">Nama Penyewa / Perusahaan</label>
                 <input
                   type="text"
-                  placeholder="Contoh: PT Maju Jaya / Hendro Wicaksono"
+                  placeholder="Contoh: Bapak Rizky Kurniawan"
                   value={formData.renterName}
                   onChange={(e) => setFormData({ ...formData, renterName: e.target.value })}
                   className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-500 transition-all"
@@ -224,7 +277,7 @@ export default function DepartureCreatePage() {
         </div>
 
         {/* KOLOM KANAN (4 Kolom): Jadwal & Tombol Simpan */}
-        <div className="lg:col-span-4 space-y-6 sticky top-6">
+        <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-6">
           <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-2xs space-y-4">
             <h3 className="font-bold text-base text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
               <span className="material-symbols-outlined text-amber-600">schedule</span>
@@ -236,7 +289,7 @@ export default function DepartureCreatePage() {
                 <label className="font-bold text-slate-700">Tujuan Perjalanan</label>
                 <input
                   type="text"
-                  placeholder="Contoh: Bandara Soekarno-Hatta T3"
+                  placeholder="Contoh: Rute Bandung & Wisata Lembang"
                   value={formData.destination}
                   onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
                   className="w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 font-medium text-slate-900 focus:outline-none focus:border-amber-500 transition-all"
@@ -244,153 +297,48 @@ export default function DepartureCreatePage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                {/* 1. POPUP KALENDER BULANAN PERSIS REFERENSI */}
-                <div className="space-y-1.5 relative">
-                  <label className="font-bold text-slate-700">Tanggal Pengambilan</label>
-                  <div
-                    onClick={() => {
-                      setShowCalendarPopup(!showCalendarPopup);
-                      setShowTimePopup(false);
-                      setShowCarDropdown(false);
-                      setShowDriverDropdown(false);
-                    }}
-                    className="w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 font-medium text-slate-900 flex items-center justify-between cursor-pointer hover:border-amber-500 transition-all">
-                    <span className="truncate text-[11px]">{formData.departureDate}</span>
-                    <span className="material-symbols-outlined text-slate-400 text-[16px]">calendar_today</span>
-                  </div>
-
-                  {showCalendarPopup && (
-                    <div className="absolute top-full left-0 mt-2 w-80 bg-white rounded-3xl border border-slate-200 shadow-2xl p-5 z-50 space-y-4 animate-in fade-in zoom-in-95 duration-150">
-                      {/* Navigasi Bulan */}
-                      <div className="flex items-center justify-between font-bold text-slate-900">
-                        <button
-                          type="button"
-                          className="w-8 h-8 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-500">
-                          &lsaquo;
-                        </button>
-                        <div className="flex items-center gap-1.5 text-sm">
-                          <span>November 2026</span>
-                          <span className="material-symbols-outlined text-[16px] text-slate-400">expand_more</span>
-                        </div>
-                        <button
-                          type="button"
-                          className="w-8 h-8 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-500">
-                          &rsaquo;
-                        </button>
-                      </div>
-
-                      {/* Header Hari */}
-                      <div className="grid grid-cols-7 text-center font-bold text-[10px] text-slate-400 uppercase tracking-wider">
-                        <span>SEN</span>
-                        <span>SEL</span>
-                        <span>RAB</span>
-                        <span>KAM</span>
-                        <span>JUM</span>
-                        <span>SAB</span>
-                        <span>MIN</span>
-                      </div>
-
-                      {/* Grid Tanggal */}
-                      <div className="grid grid-cols-7 gap-y-1 text-center text-xs font-bold">
-                        {DAYS_IN_NOV.map((item, idx) => {
-                          const isSelected = item.day === 13 && item.currentMonth;
-                          return (
-                            <div
-                              key={idx}
-                              onClick={() => {
-                                if (item.currentMonth) {
-                                  setFormData({ ...formData, departureDate: `${item.day} November 2026` });
-                                  setShowCalendarPopup(false);
-                                }
-                              }}
-                              className={`h-8 w-8 mx-auto rounded-full flex items-center justify-center cursor-pointer transition-all ${
-                                isSelected
-                                  ? "bg-amber-600 text-white shadow-md font-black"
-                                  : item.currentMonth
-                                    ? "text-slate-800 hover:bg-slate-100"
-                                    : "text-slate-300 pointer-events-none"
-                              }`}>
-                              {item.day}
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      {/* Footer Kalender */}
-                      <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-[11px] font-semibold text-slate-500">
-                        <span>13 November 2026</span>
-                        <span className="text-amber-600 font-bold">Hari ini</span>
-                      </div>
-                    </div>
-                  )}
+              {/* Pilihan Waktu Jam */}
+              <div className="space-y-1.5 relative">
+                <label className="font-bold text-slate-700">Estimasi Jam Keluar</label>
+                <div
+                  onClick={() => {
+                    setShowTimePopup(!showTimePopup);
+                    setShowCarDropdown(false);
+                    setShowDriverDropdown(false);
+                  }}
+                  className="w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 font-medium text-slate-900 flex items-center justify-between cursor-pointer hover:border-amber-500 transition-all">
+                  <span className="truncate">{formData.departureTime}</span>
+                  <span className="material-symbols-outlined text-slate-400 text-[18px]">schedule</span>
                 </div>
 
-                {/* 2. POPUP GRID JAM PERSIS REFERENSI */}
-                <div className="space-y-1.5 relative">
-                  <label className="font-bold text-slate-700">Jam</label>
-                  <div
-                    onClick={() => {
-                      setShowTimePopup(!showTimePopup);
-                      setShowCalendarPopup(false);
-                      setShowCarDropdown(false);
-                      setShowDriverDropdown(false);
-                    }}
-                    className="w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 font-medium text-slate-900 flex items-center justify-between cursor-pointer hover:border-amber-500 transition-all">
-                    <span className="truncate text-[11px]">{formData.departureTime}</span>
-                    <span className="material-symbols-outlined text-slate-400 text-[16px]">schedule</span>
+                {showTimePopup && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl border border-slate-200 shadow-xl p-3 z-50 grid grid-cols-3 gap-2 max-h-56 overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
+                    {TIME_SLOTS.map((time, idx) => (
+                      <div
+                        key={idx}
+                        onClick={() => {
+                          setFormData({ ...formData, departureTime: time });
+                          setShowTimePopup(false);
+                        }}
+                        className={`p-2 rounded-xl text-center text-xs font-bold cursor-pointer transition-all ${
+                          formData.departureTime === time
+                            ? "bg-amber-600 text-white shadow-xs"
+                            : "bg-slate-50 text-slate-700 hover:bg-slate-100"
+                        }`}>
+                        {time}
+                      </div>
+                    ))}
                   </div>
-
-                  {showTimePopup && (
-                    <div className="absolute top-full right-0 mt-2 w-72 bg-white rounded-3xl border border-slate-200 shadow-2xl p-5 z-50 space-y-4 animate-in fade-in zoom-in-95 duration-150">
-                      <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                        <span className="font-bold text-xs text-slate-900">Pilih Jam Pengambilan</span>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase">WIB</span>
-                      </div>
-
-                      {/* Grid Tombol Jam */}
-                      <div className="grid grid-cols-3 gap-2">
-                        {TIME_SLOTS.map((slot, idx) => {
-                          const isSelected = formData.departureTime === slot;
-                          return (
-                            <button
-                              key={idx}
-                              type="button"
-                              onClick={() => {
-                                setFormData({ ...formData, departureTime: slot });
-                                setShowTimePopup(false);
-                              }}
-                              className={`py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                                isSelected
-                                  ? "bg-amber-600 text-white shadow-md"
-                                  : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-100"
-                              }`}>
-                              {slot.replace(" WIB", "")}
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                      {/* Footer Jam */}
-                      <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[10px] text-slate-500 font-medium">
-                        <span>
-                          Terpilih: <strong>{formData.departureTime}</strong>
-                        </span>
-                        <span className="text-amber-600 font-bold">Default (08:00)</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                )}
               </div>
 
-              {/* CUSTOM DROPDOWN PENUGASAN DRIVER */}
+              {/* Pilihan Penugasan Driver */}
               <div className="space-y-1.5 relative">
-                <label className="font-bold text-slate-700">Penugasan Driver</label>
+                <label className="font-bold text-slate-700">Penugasan Driver / Layanan</label>
                 <div
                   onClick={() => {
                     setShowDriverDropdown(!showDriverDropdown);
                     setShowCarDropdown(false);
-                    setShowCalendarPopup(false);
                     setShowTimePopup(false);
                   }}
                   className="w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 font-bold text-slate-900 flex items-center justify-between cursor-pointer hover:border-amber-500 transition-all">
@@ -434,9 +382,10 @@ export default function DepartureCreatePage() {
             <div className="pt-3">
               <button
                 type="submit"
-                className="w-full py-3.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer">
+                disabled={isSubmitting}
+                className="w-full py-3.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer disabled:opacity-60">
                 <span className="material-symbols-outlined text-[18px]">add_box</span>
-                <span>Buat & Simpan Keberangkatan</span>
+                <span>{isSubmitting ? "Menyimpan Jadwal..." : "Buat & Simpan Keberangkatan"}</span>
               </button>
             </div>
           </div>

@@ -146,7 +146,7 @@ export default function DeparturePage() {
                   if (item.status === "Selesai") statusBadge = "bg-emerald-50 text-emerald-700 border-emerald-200";
                   if (item.status === "Tertunda") statusBadge = "bg-rose-50 text-rose-700 border-rose-200";
 
-                  const cleanBookingId = item.bookingCode.replace("#", "");
+                  const cleanBookingId = item.id || item.bookingCode.replace("#", "");
 
                   return (
                     <tr key={item.id} className="hover:bg-slate-50/80 transition-colors divide-x divide-slate-200">

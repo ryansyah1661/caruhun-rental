@@ -42,7 +42,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Admin Keberangkatan & Kedatangan
     Route::get('/admin/departures', [AdminDepartureController::class, 'index']);
+    Route::post('/admin/departures', [AdminDepartureController::class, 'store']);
     Route::get('/admin/departures/{id}', [AdminDepartureController::class, 'show']);
+    Route::post('/admin/departures/{id}/checkout', [AdminDepartureController::class, 'checkout']);
+    Route::post('/admin/departures/{id}', [AdminDepartureController::class, 'checkout']);
     Route::get('/admin/arrivals', [AdminArrivalController::class, 'index']);
     Route::get('/admin/arrivals/{id}', [AdminArrivalController::class, 'show']);
 
@@ -74,9 +77,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/admin/customers/{id}', [AdminCustomerController::class, 'destroy']);
 
     // Admin Presensi Kehadiran
+    Route::get('/admin/attendances', [AdminAttendanceController::class, 'index']);
+    Route::post('/admin/attendances', [AdminAttendanceController::class, 'store']);
+    Route::put('/admin/attendances/{id}/clock-out', [AdminAttendanceController::class, 'clockOut']);
     Route::get('/admin/attendance', [AdminAttendanceController::class, 'index']);
-    Route::post('/admin/attendance/clock-in', [AdminAttendanceController::class, 'clockIn']);
-    Route::post('/admin/attendance/clock-out', [AdminAttendanceController::class, 'clockOut']);
+    Route::post('/admin/attendance', [AdminAttendanceController::class, 'store']);
+    Route::put('/admin/attendance/{id}/clock-out', [AdminAttendanceController::class, 'clockOut']);
 
     // Super Admin: Kelola Pengguna (Users)
     Route::get('/admin/users', [AdminUserController::class, 'index']);

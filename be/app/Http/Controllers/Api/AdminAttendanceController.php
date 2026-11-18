@@ -15,8 +15,9 @@ class AdminAttendanceController extends Controller
     {
         $today = Carbon::today()->toDateString();
         $date = $request->query('date', $today);
+        $isToday = ($date === $today);
 
-        // Ambil data absensi hari ini dari database
+        // Ambil data absensi berdasarkan tanggal yang dipilih dari database
         $recordedAttendances = Attendance::whereDate('date', $date)
             ->latest()
             ->get();
@@ -39,7 +40,7 @@ class AdminAttendanceController extends Controller
             ];
         })->toArray();
 
-        // Staf yang belum absen otomatis ditampilkan sebagai 'Belum Hadir'
+        // Staf yang belum absen pada tanggal ini
         foreach ($users as $u) {
             if (!in_array($u->id, $recordedUserIds, true)) {
                 $items[] = [
@@ -49,15 +50,16 @@ class AdminAttendanceController extends Controller
                     'role' => $u->role,
                     'clockIn' => '-',
                     'clockOut' => '-',
-                    'status' => 'Belum Hadir',
+                    'status' => $isToday ? 'Belum Hadir' : 'Alpha',
                     'location' => '-',
-                    'notes' => 'Belum absensi hari ini',
+                    'notes' => $isToday ? 'Belum absensi hari ini' : 'Tidak ada absensi pada tanggal ini',
                 ];
             }
         }
 
         return response()->json([
             'date' => $date,
+            'isToday' => $isToday,
             'attendances' => $items,
             'total' => count($items),
         ]);
@@ -67,6 +69,7 @@ class AdminAttendanceController extends Controller
     {
         $data = $request->validate([
             'user_id' => ['nullable'],
+            'date' => ['nullable', 'date'],
             'name' => ['required', 'string', 'max:255'],
             'role' => ['nullable', 'string'],
             'status' => ['required', 'string'], // Hadir, Izin, Alpha, Sakit
@@ -74,15 +77,20 @@ class AdminAttendanceController extends Controller
             'notes' => ['nullable', 'string'],
         ]);
 
-        $today = Carbon::today()->toDateString();
+        $targetDate = !empty($data['date']) ? Carbon::parse($data['date'])->toDateString() : Carbon::today()->toDateString();
         $now = Carbon::now()->format('H:i') . ' WIB';
 
+        $matchAttributes = ['date' => $targetDate];
+        if (!empty($data['user_id'])) {
+            $matchAttributes['user_id'] = $data['user_id'];
+        } else {
+            $matchAttributes['user_name'] = $data['name'];
+        }
+
         $attendance = Attendance::updateOrCreate(
+            $matchAttributes,
             [
                 'user_id' => $data['user_id'] ?? null,
-                'date' => $today,
-            ],
-            [
                 'user_name' => $data['name'],
                 'role' => $data['role'] ?? 'petugas',
                 'clock_in' => $data['status'] === 'Hadir' ? $now : '-',
