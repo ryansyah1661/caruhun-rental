@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CustomSelect from "@/components/CustomSelect";
 import { useCatalog, CatalogVehicle, CategoryFilter } from "@/lib/use-catalog";
+import { usePageContent } from "@/lib/use-page-content";
 
 type ActiveTab = "tarif" | "ongkir";
 type PackageTab = "lepas-kunci" | "dengan-driver" | "bandara";
@@ -19,7 +20,7 @@ interface DeliveryZone {
   nightPickupFee: number;
 }
 
-const DELIVERY_ZONES: DeliveryZone[] = [
+const DEFAULT_DELIVERY_ZONES: DeliveryZone[] = [
   {
     id: "bogor-tengah",
     district: "Bogor Tengah",
@@ -118,6 +119,24 @@ const DELIVERY_ZONES: DeliveryZone[] = [
   },
 ];
 
+const DEFAULT_PACKAGE_RULES: Record<string, { title: string; description: string }[]> = {
+  "lepas-kunci": [
+    { title: "Pengembalian Deposit", description: "Deposit jaminan dikembalikan 100% via transfer maksimal 1×24 jam setelah unit kembali tanpa kendala atau pelanggaran ETLE." },
+    { title: "Toleransi & Overtime", description: "Toleransi keterlambatan pengembalian 1 jam. Selebihnya dikenakan biaya overtime 10% per jam dari tarif harian unit." },
+    { title: "Ketentuan BBM (Bar-to-Bar)", description: "Tarif Lepas Kunci belum termasuk BBM, tol, dan parkir. Posisi indikator BBM saat kembali wajib sama seperti saat serah terima awal." },
+  ],
+  "dengan-driver": [
+    { title: "Ketentuan Deposit Jaminan", description: "Deposit jaminan digunakan untuk mengantisipasi biaya overtime, rute tambahan, atau tol/parkir di akhir perjalanan, dan sisanya dikembalikan penuh maksimal 1×24 jam." },
+    { title: "Biaya Operasional Perjalanan", description: "Tarif tertera mencakup unit dan jasa pengemudi. BBM, tol, parkir, dan uang makan driver (Rp 75.000/hari) ditanggung penyewa." },
+    { title: "Perjalanan Menginap Luar Kota", description: "Untuk perjalanan luar kota menginap, penyewa menyediakan akomodasi penginapan driver atau biaya penginapan Rp 150.000/malam." },
+  ],
+  "bandara": [
+    { title: "Tarif All-In Sekali Jalan", description: "Harga paket Drop-off Bandara sudah termasuk unit, driver, BBM, dan biaya tol dari titik jemput wilayah Bogor ke terminal tujuan." },
+    { title: "Penjemputan Bandara (Pick-up)", description: "Untuk penjemputan dari bandara ke Bogor berlaku tarif yang sama (hanya menambah biaya parkir resmi bandara sesuai struk)." },
+    { title: "Garansi Tepat Waktu", description: "Driver standby di lokasi penjemputan minimal 30 menit sebelum jadwal keberangkatan agar Anda tidak terburu-buru mengejar penerbangan." },
+  ],
+};
+
 const TIME_SLOT_OPTIONS = [
   { value: "normal", label: "Jam Normal (06.00 – 21.00 WIB)" },
   { value: "night-drop", label: "Pengantaran Malam (> 21.00 WIB)" },
@@ -126,13 +145,27 @@ const TIME_SLOT_OPTIONS = [
 
 export default function TarifDanOngkirPage() {
   const { data: vehicles = [], isLoading } = useCatalog();
+  const { data: pageData } = usePageContent("tarif");
+  const tarifSections = pageData?.sections || {};
+
+  const dynamicZones: DeliveryZone[] = useMemo(() => {
+    const dbZones = tarifSections?.delivery_zones?.extra_items;
+    if (dbZones && Array.isArray(dbZones) && dbZones.length > 0) return dbZones;
+    return DEFAULT_DELIVERY_ZONES;
+  }, [tarifSections]);
+
+  const dynamicRules = useMemo(() => {
+    const dbRules = tarifSections?.package_rules?.extra_items;
+    if (dbRules && typeof dbRules === "object" && !Array.isArray(dbRules)) return dbRules as Record<string, { title: string; description: string }[]>;
+    return DEFAULT_PACKAGE_RULES;
+  }, [tarifSections]);
 
   const [activeTab, setActiveTab] = useState<ActiveTab>("tarif");
   const [packageTab, setPackageTab] = useState<PackageTab>("lepas-kunci");
   const [catFilter, setCatFilter] = useState<CategoryFilter>("semua");
 
   const [zoneSearch, setZoneSearch] = useState("");
-  const [selectedZoneId, setSelectedZoneId] = useState<string>(DELIVERY_ZONES[0].id);
+  const [selectedZoneId, setSelectedZoneId] = useState<string>("bogor-tengah");
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>("normal");
 
   const filteredRates = useMemo(() => {
@@ -144,14 +177,14 @@ export default function TarifDanOngkirPage() {
   }, [vehicles, packageTab, catFilter]);
 
   const filteredZones = useMemo(() => {
-    if (!zoneSearch.trim()) return DELIVERY_ZONES;
+    if (!zoneSearch.trim()) return dynamicZones;
     const q = zoneSearch.toLowerCase();
-    return DELIVERY_ZONES.filter((z) => z.district.toLowerCase().includes(q) || z.city.toLowerCase().includes(q));
-  }, [zoneSearch]);
+    return dynamicZones.filter((z) => z.district.toLowerCase().includes(q) || z.city.toLowerCase().includes(q));
+  }, [zoneSearch, dynamicZones]);
 
   const selectedZone = useMemo(
-    () => DELIVERY_ZONES.find((z) => z.id === selectedZoneId) || DELIVERY_ZONES[0],
-    [selectedZoneId],
+    () => dynamicZones.find((z) => z.id === selectedZoneId) || dynamicZones[0],
+    [selectedZoneId, dynamicZones],
   );
 
   const calculatedOngkir = useMemo(() => {
@@ -162,11 +195,11 @@ export default function TarifDanOngkirPage() {
 
   const zoneSelectOptions = useMemo(
     () =>
-      DELIVERY_ZONES.map((z) => ({
+      dynamicZones.map((z) => ({
         value: z.id,
         label: `${z.district} (${z.city})`,
       })),
-    [],
+    [dynamicZones],
   );
 
   const handleOrderOngkirWA = () => {
@@ -192,17 +225,19 @@ Mohon info ketersediaan jadwal pengantaran. Terima kasih.`;
       <section className="bg-white pt-32 sm:pt-36 pb-14 border-b border-slate-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-5">
           <span className="inline-flex items-center px-3.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold">
-            Transparansi Biaya
+            {tarifSections?.hero?.badge || "Transparansi Biaya"}
           </span>
 
           <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
-            Tarif Sewa & Ongkir <br />
-            <span className="text-amber-600">Jelas Sejak Awal</span>
+            {tarifSections?.hero?.title || "Tarif Sewa & Ongkir"} <br />
+            <span className="text-amber-600">
+              {tarifSections?.hero?.title_highlight || "Jelas Sejak Awal"}
+            </span>
           </h1>
 
           <p className="text-xs sm:text-sm text-slate-600 max-w-2xl mx-auto leading-relaxed">
-            Pilih paket layanan untuk melihat rincian harga resmi per durasi sewa, nominal deposit, serta simulasi biaya
-            antar-jemput unit ke lokasi Anda.
+            {tarifSections?.hero?.description ||
+              "Pilih paket layanan untuk melihat rincian harga resmi per durasi sewa, nominal deposit, serta simulasi biaya antar-jemput unit ke lokasi Anda."}
           </p>
 
           {/* Switcher Utama */}
@@ -432,81 +467,14 @@ Mohon info ketersediaan jadwal pengantaran. Terima kasih.`;
             </div>
 
             {/* Catatan Ketentuan Dinamis */}
-            {packageTab === "lepas-kunci" && (
+            {dynamicRules[packageTab] && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-                <div className="bg-white p-5 rounded-2xl border border-slate-200/90 border-l-4 border-l-amber-500 space-y-1.5">
-                  <h3 className="font-bold text-xs text-slate-900">Pengembalian Deposit</h3>
-                  <p className="text-[11px] text-slate-500 leading-relaxed">
-                    Deposit jaminan dikembalikan 100% via transfer maksimal 1×24 jam setelah unit kembali tanpa kendala
-                    atau pelanggaran ETLE.
-                  </p>
-                </div>
-                <div className="bg-white p-5 rounded-2xl border border-slate-200/90 border-l-4 border-l-amber-500 space-y-1.5">
-                  <h3 className="font-bold text-xs text-slate-900">Toleransi & Overtime</h3>
-                  <p className="text-[11px] text-slate-500 leading-relaxed">
-                    Toleransi keterlambatan pengembalian 1 jam. Selebihnya dikenakan biaya overtime 10% per jam dari
-                    tarif harian unit.
-                  </p>
-                </div>
-                <div className="bg-white p-5 rounded-2xl border border-slate-200/90 border-l-4 border-l-amber-500 space-y-1.5">
-                  <h3 className="font-bold text-xs text-slate-900">Ketentuan BBM (Bar-to-Bar)</h3>
-                  <p className="text-[11px] text-slate-500 leading-relaxed">
-                    Tarif Lepas Kunci belum termasuk BBM, tol, dan parkir. Posisi indikator BBM saat kembali wajib sama
-                    seperti saat serah terima awal.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {packageTab === "dengan-driver" && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-                <div className="bg-white p-5 rounded-2xl border border-slate-200/90 border-l-4 border-l-amber-500 space-y-1.5">
-                  <h3 className="font-bold text-xs text-slate-900">Ketentuan Deposit Jaminan</h3>
-                  <p className="text-[11px] text-slate-500 leading-relaxed">
-                    Deposit jaminan digunakan untuk mengantisipasi biaya overtime, rute tambahan, atau tol/parkir di
-                    akhir perjalanan, dan sisanya dikembalikan penuh maksimal 1×24 jam.
-                  </p>
-                </div>
-                <div className="bg-white p-5 rounded-2xl border border-slate-200/90 border-l-4 border-l-amber-500 space-y-1.5">
-                  <h3 className="font-bold text-xs text-slate-900">Biaya Operasional Perjalanan</h3>
-                  <p className="text-[11px] text-slate-500 leading-relaxed">
-                    Tarif tertera mencakup unit dan jasa pengemudi. BBM, tol, parkir, dan uang makan driver (Rp
-                    75.000/hari) ditanggung penyewa.
-                  </p>
-                </div>
-                <div className="bg-white p-5 rounded-2xl border border-slate-200/90 border-l-4 border-l-amber-500 space-y-1.5">
-                  <h3 className="font-bold text-xs text-slate-900">Perjalanan Menginap Luar Kota</h3>
-                  <p className="text-[11px] text-slate-500 leading-relaxed">
-                    Untuk perjalanan luar kota menginap, penyewa menyediakan akomodasi penginapan driver atau biaya
-                    penginapan Rp 150.000/malam.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {packageTab === "bandara" && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-                <div className="bg-white p-5 rounded-2xl border border-slate-200/90 border-l-4 border-l-amber-500 space-y-1.5">
-                  <h3 className="font-bold text-xs text-slate-900">Tarif All-In Sekali Jalan</h3>
-                  <p className="text-[11px] text-slate-500 leading-relaxed">
-                    Harga paket Drop-off Bandara sudah termasuk unit, driver, BBM, dan biaya tol dari titik jemput
-                    wilayah Bogor ke terminal tujuan.
-                  </p>
-                </div>
-                <div className="bg-white p-5 rounded-2xl border border-slate-200/90 border-l-4 border-l-amber-500 space-y-1.5">
-                  <h3 className="font-bold text-xs text-slate-900">Penjemputan Bandara (Pick-up)</h3>
-                  <p className="text-[11px] text-slate-500 leading-relaxed">
-                    Untuk penjemputan dari bandara ke Bogor berlaku tarif yang sama (hanya menambah biaya parkir resmi
-                    bandara sesuai struk).
-                  </p>
-                </div>
-                <div className="bg-white p-5 rounded-2xl border border-slate-200/90 border-l-4 border-l-amber-500 space-y-1.5">
-                  <h3 className="font-bold text-xs text-slate-900">Garansi Tepat Waktu</h3>
-                  <p className="text-[11px] text-slate-500 leading-relaxed">
-                    Driver standby di lokasi penjemputan minimal 30 menit sebelum jadwal keberangkatan agar Anda tidak
-                    terburu-buru mengejar penerbangan.
-                  </p>
-                </div>
+                {(dynamicRules[packageTab] || []).map((rule, rIdx) => (
+                  <div key={rIdx} className="bg-white p-5 rounded-2xl border border-slate-200/90 border-l-4 border-l-amber-500 space-y-1.5">
+                    <h3 className="font-bold text-xs text-slate-900">{rule.title}</h3>
+                    <p className="text-[11px] text-slate-500 leading-relaxed">{rule.description}</p>
+                  </div>
+                ))}
               </div>
             )}
           </div>
